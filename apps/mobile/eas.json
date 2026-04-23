@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 7.8.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production"
+      },
+      "ios": {
+        "appleId": "tu@email.com",
+        "ascAppId": "000000000"
+      }
+    }
+  }
+}

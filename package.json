@@ -1,0 +1,18 @@
+{
+  "name": "app-restaurantes",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "dev:web": "turbo run dev --filter=web",
+    "dev:mobile": "turbo run dev --filter=mobile",
+    "build:web": "turbo run build --filter=web"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.0",
+    "typescript": "^5.4.5"
+  },
+  "packageManager": "pnpm@9.1.0"
+}

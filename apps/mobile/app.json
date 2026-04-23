@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "ReservApp",
+    "slug": "app-restaurantes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "reservapp",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f97316"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.apprestaurantes.reservapp",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Usamos tu ubicación para mostrarte restaurantes cercanos.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Usamos tu ubicación para mostrarte restaurantes cercanos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#f97316"
+      },
+      "package": "com.apprestaurantes.reservapp",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-notifications",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Usamos tu ubicación para mostrarte restaurantes cercanos."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
