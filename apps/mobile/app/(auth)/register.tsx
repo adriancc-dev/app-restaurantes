@@ -8,9 +8,18 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  type KeyboardTypeOptions,
 } from 'react-native'
 import { router } from 'expo-router'
 import { supabase } from '@/lib/supabase'
+
+interface FormField {
+  label: string
+  value: string
+  setter: (v: string) => void
+  placeholder: string
+  type: KeyboardTypeOptions
+}
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState('')
@@ -83,17 +92,17 @@ export default function RegisterScreen() {
           </View>
 
           <View className="space-y-4">
-            {[
+            {([
               { label: 'Nombre completo', value: fullName, setter: setFullName, placeholder: 'Tu nombre', type: 'default' },
               { label: 'Email', value: email, setter: setEmail, placeholder: 'tu@email.com', type: 'email-address' },
               { label: 'Teléfono', value: phone, setter: setPhone, placeholder: '600 000 000', type: 'phone-pad' },
-            ].map((field) => (
+            ] as FormField[]).map((field) => (
               <View key={field.label}>
                 <Text className="text-sm font-medium text-gray-700 mb-1">{field.label}</Text>
                 <TextInput
                   className="border border-gray-200 rounded-xl px-4 py-3 text-gray-900 bg-gray-50"
                   placeholder={field.placeholder}
-                  keyboardType={field.type as any}
+                  keyboardType={field.type}
                   autoCapitalize={field.type === 'default' ? 'words' : 'none'}
                   value={field.value}
                   onChangeText={field.setter}

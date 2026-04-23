@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { format, addDays } from 'date-fns'
 import { es } from 'date-fns/locale'
 import BookingForm from '@/components/BookingForm'
-import { generateTimeSlots } from '@/lib/slots'
+import { generateTimeSlots } from '@repo/shared'
 
 interface Props {
   params: { id: string }
@@ -53,9 +53,8 @@ export default async function RestaurantDetailPage({ params, searchParams }: Pro
     format(addDays(new Date(), i), 'yyyy-MM-dd')
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/')
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -114,8 +113,8 @@ export default async function RestaurantDetailPage({ params, searchParams }: Pro
           selectedDate={selectedDate}
           availableDates={availableDates}
           slots={slots}
-          userId={user!.id}
-          userEmail={user!.email!}
+          userId={user.id}
+          userEmail={user.email ?? ''}
         />
       </div>
     </div>

@@ -1,33 +1,36 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Link from 'next/link'
+import type { Reservation, Restaurant, ReservationStatus } from '@repo/shared'
+
+type ReservationRow = Omit<Reservation, 'restaurant'> & {
+  restaurant: Pick<Restaurant, 'name' | 'image_url'> | null
+}
 
 export default async function ProfilePage() {
   const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/')
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', user!.id)
+    .eq('id', user.id)
     .single()
 
   const { data: reservations } = await supabase
     .from('reservations')
     .select('*, restaurant:restaurants(name, image_url)')
-    .eq('user_id', user!.id)
+    .eq('user_id', user.id)
     .order('date', { ascending: false })
     .limit(20)
 
-  const upcoming = reservations?.filter(
-    (r) => r.status === 'confirmed' && r.date >= format(new Date(), 'yyyy-MM-dd')
-  )
-  const past = reservations?.filter(
-    (r) => r.status !== 'confirmed' || r.date < format(new Date(), 'yyyy-MM-dd')
-  )
+  const rows = (reservations ?? []) as ReservationRow[]
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const upcoming = rows.filter((r) => r.status === 'confirmed' && r.date >= today)
+  const past = rows.filter((r) => r.status !== 'confirmed' || r.date < today)
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
@@ -39,9 +42,9 @@ export default async function ProfilePage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">
-              {profile?.full_name ?? user!.email}
+              {profile?.full_name ?? user.email}
             </h1>
-            <p className="text-gray-500 text-sm">{user!.email}</p>
+            <p className="text-gray-500 text-sm">{user.email}</p>
             {profile?.phone && (
               <p className="text-gray-500 text-sm">📞 {profile.phone}</p>
             )}
@@ -55,9 +58,9 @@ export default async function ProfilePage() {
       {/* Reservas próximas */}
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-4">
-          Próximas reservas ({upcoming?.length ?? 0})
+          Próximas reservas ({upcoming.length})
         </h2>
-        {upcoming && upcoming.length > 0 ? (
+        {upcoming.length > 0 ? (
           <div className="space-y-3">
             {upcoming.map((r) => (
               <ReservationCard key={r.id} reservation={r} />
@@ -74,7 +77,7 @@ export default async function ProfilePage() {
       </div>
 
       {/* Historial */}
-      {past && past.length > 0 && (
+      {past.length > 0 && (
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-4">Historial</h2>
           <div className="space-y-3">
@@ -88,14 +91,14 @@ export default async function ProfilePage() {
   )
 }
 
-function ReservationCard({ reservation }: { reservation: any }) {
-  const statusColor: Record<string, string> = {
+function ReservationCard({ reservation }: { reservation: ReservationRow }) {
+  const statusColor: Record<ReservationStatus, string> = {
     confirmed: 'text-green-600 bg-green-50',
     cancelled: 'text-red-600 bg-red-50',
     completed: 'text-gray-600 bg-gray-50',
     no_show: 'text-orange-600 bg-orange-50',
   }
-  const statusLabel: Record<string, string> = {
+  const statusLabel: Record<ReservationStatus, string> = {
     confirmed: 'Confirmada',
     cancelled: 'Cancelada',
     completed: 'Completada',
@@ -127,9 +130,7 @@ function ReservationCard({ reservation }: { reservation: any }) {
         </p>
       </div>
       <span
-        className={`text-xs font-semibold px-3 py-1 rounded-full ${
-          statusColor[reservation.status]
-        }`}
+        className={`text-xs font-semibold px-3 py-1 rounded-full ${statusColor[reservation.status]}`}
       >
         {statusLabel[reservation.status]}
       </span>

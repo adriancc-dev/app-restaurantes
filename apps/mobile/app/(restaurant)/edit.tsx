@@ -8,11 +8,21 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  type KeyboardTypeOptions,
 } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { LOCATIONS } from '@repo/shared'
+
+interface Field {
+  label: string
+  value: string
+  setter: (v: string) => void
+  placeholder: string
+  multiline?: boolean
+  type?: KeyboardTypeOptions
+}
 
 export default function EditRestaurantScreen() {
   const { session } = useAuth()
@@ -67,7 +77,7 @@ export default function EditRestaurantScreen() {
     Alert.alert('¡Guardado!', 'Los cambios se han guardado correctamente.')
   }
 
-  const fields = [
+  const fields: Field[] = [
     { label: 'Nombre del restaurante *', value: name, setter: setName, placeholder: 'Mi restaurante' },
     { label: 'Descripción', value: description, setter: setDescription, placeholder: 'Breve descripción...', multiline: true },
     { label: 'Dirección', value: address, setter: setAddress, placeholder: 'Calle, número...' },
@@ -92,7 +102,7 @@ export default function EditRestaurantScreen() {
                 onChangeText={f.setter}
                 multiline={f.multiline}
                 numberOfLines={f.multiline ? 3 : 1}
-                keyboardType={(f.type ?? 'default') as any}
+                keyboardType={f.type ?? 'default'}
                 autoCapitalize="none"
               />
             </View>

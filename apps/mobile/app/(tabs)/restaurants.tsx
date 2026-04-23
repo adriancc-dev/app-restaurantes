@@ -108,7 +108,7 @@ export default function RestaurantsScreen() {
               <View className="p-4">
                 <Text className="text-gray-900 font-bold text-lg">{item.name}</Text>
                 <Text className="text-gray-500 text-sm mt-0.5">
-                  📍 {(item as any).location?.name}
+                  📍 {item.location?.name}
                 </Text>
                 {item.description && (
                   <Text className="text-gray-600 text-sm mt-2" numberOfLines={2}>

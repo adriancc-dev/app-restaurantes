@@ -14,7 +14,7 @@ export async function sendBookingConfirmation({
   date: string
   time: string
   partySize: number
-}) {
+}): Promise<void> {
   await resend.emails.send({
     from: 'App Restaurantes <noreply@apprestaurantes.com>',
     to,
@@ -44,7 +44,7 @@ export async function sendBookingReminder({
   restaurantName: string
   date: string
   time: string
-}) {
+}): Promise<void> {
   await resend.emails.send({
     from: 'App Restaurantes <noreply@apprestaurantes.com>',
     to,

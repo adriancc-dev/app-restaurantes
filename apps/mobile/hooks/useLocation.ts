@@ -34,11 +34,12 @@ export function useLocation() {
     const loc = await Location.getCurrentPositionAsync({})
     const { latitude, longitude } = loc.coords
 
-    let nearest = LOCATIONS[0]
+    let nearest = LOCATIONS[0] ?? LOCATIONS[0]
     let minDist = Infinity
 
     for (const location of LOCATIONS) {
       const coords = LOCATION_COORDS[location.slug]
+      if (!coords) continue
       const dist = distanceKm(latitude, longitude, coords.lat, coords.lng)
       if (dist < minDist) {
         minDist = dist
@@ -46,7 +47,7 @@ export function useLocation() {
       }
     }
 
-    setNearestLocation(nearest.slug)
+    if (nearest) setNearestLocation(nearest.slug)
   }
 
   useEffect(() => {

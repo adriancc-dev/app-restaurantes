@@ -262,6 +262,6 @@ export default function CalendarPage() {
 
 function timeToMinutes(time: string | null): number {
   if (!time) return 0
-  const [h, m] = time.split(':').map(Number)
-  return h * 60 + m
+  const parts = time.split(':').map(Number)
+  return (parts[0] ?? 0) * 60 + (parts[1] ?? 0)
 }

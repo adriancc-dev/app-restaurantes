@@ -9,11 +9,13 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function initialize() {
+      const { data: { session } } = await supabase.auth.getSession()
       setSession(session)
-      if (session) loadProfile(session.user.id)
+      if (session) await loadProfile(session.user.id)
       else setLoading(false)
-    })
+    }
+    void initialize()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
@@ -24,7 +26,7 @@ export function useAuth() {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function loadProfile(userId: string) {
+  async function loadProfile(userId: string): Promise<void> {
     const { data } = await supabase
       .from('profiles')
       .select('*')

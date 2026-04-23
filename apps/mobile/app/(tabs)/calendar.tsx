@@ -127,7 +127,7 @@ export default function CalendarScreen() {
                     <View className="flex-1">
                       <Text className="font-bold text-gray-900">{r.name}</Text>
                       <Text className="text-gray-500 text-sm">
-                        📍 {(r as any).location?.name}
+                        📍 {r.location?.name}
                       </Text>
                       <Text className="text-green-600 text-xs font-medium mt-1">
                         ✓ Disponible
@@ -157,6 +157,6 @@ export default function CalendarScreen() {
 
 function toMinutes(time: string | null): number {
   if (!time) return 0
-  const [h, m] = time.split(':').map(Number)
-  return h * 60 + m
+  const parts = time.split(':').map(Number)
+  return (parts[0] ?? 0) * 60 + (parts[1] ?? 0)
 }

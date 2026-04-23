@@ -8,18 +8,23 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.text()
   const sig = req.headers.get('stripe-signature')!
 
   let event: Stripe.Event
   try {
     event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
-  } catch {
+  } catch (err) {
+    console.error('Stripe webhook signature error:', err)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
   const subscription = event.data.object as Stripe.Subscription
+  const customerId =
+    typeof subscription.customer === 'string'
+      ? subscription.customer
+      : subscription.customer.id
 
   if (
     event.type === 'customer.subscription.created' ||
@@ -39,7 +44,7 @@ export async function POST(req: NextRequest) {
         is_active: status === 'active',
         stripe_subscription_id: subscription.id,
       })
-      .eq('stripe_customer_id', subscription.customer as string)
+      .eq('stripe_customer_id', customerId)
   }
 
   if (event.type === 'customer.subscription.deleted') {
@@ -50,7 +55,7 @@ export async function POST(req: NextRequest) {
         is_active: false,
         stripe_subscription_id: null,
       })
-      .eq('stripe_customer_id', subscription.customer as string)
+      .eq('stripe_customer_id', customerId)
   }
 
   return NextResponse.json({ received: true })

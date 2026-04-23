@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native'
-import { router } from 'expo-router'
+import { router, type Href } from 'expo-router'
 import { format } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import type { Restaurant } from '@repo/shared'
 
 export default function RestaurantDashboard() {
   const { session } = useAuth()
-  const [restaurant, setRestaurant] = useState<any>(null)
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [todayCount, setTodayCount] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -109,7 +110,7 @@ export default function RestaurantDashboard() {
         ].map((item) => (
           <TouchableOpacity
             key={item.route}
-            onPress={() => router.push(item.route as any)}
+            onPress={() => router.push(item.route as Href)}
             className="bg-white rounded-2xl p-4 flex-row items-center gap-4 border border-gray-100"
           >
             <Text className="text-2xl">{item.icon}</Text>

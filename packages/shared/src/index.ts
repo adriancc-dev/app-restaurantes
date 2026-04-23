@@ -1,4 +1,5 @@
 export * from './types/index'
+export * from './schemas'
 
 import type { RestaurantHours, TimeSlot } from './types/index'
 
@@ -9,8 +10,12 @@ export function generateTimeSlots(
   if (!hours.is_open || !hours.open_time || !hours.close_time) return []
 
   const slots: TimeSlot[] = []
-  const [openH, openM] = hours.open_time.split(':').map(Number)
-  const [closeH, closeM] = hours.close_time.split(':').map(Number)
+  const openParts = hours.open_time.split(':').map(Number)
+  const closeParts = hours.close_time.split(':').map(Number)
+  const openH = openParts[0] ?? 0
+  const openM = openParts[1] ?? 0
+  const closeH = closeParts[0] ?? 0
+  const closeM = closeParts[1] ?? 0
 
   let current = openH * 60 + openM
   const end = closeH * 60 + closeM
