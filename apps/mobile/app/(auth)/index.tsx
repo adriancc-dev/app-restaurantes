@@ -19,10 +19,14 @@ export default function LoginScreen() {
 
   async function handleLogin() {
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
+    const normalizedEmail = email.trim()
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    })
 
     if (error) {
+      setLoading(false)
       Alert.alert('Error', 'Credenciales incorrectas')
       return
     }
@@ -30,8 +34,10 @@ export default function LoginScreen() {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
+      .eq('id', data.user.id)
       .single()
 
+    setLoading(false)
     router.replace(profile?.role === 'restaurant' ? '/(restaurant)/dashboard' : '/(tabs)/')
   }
 

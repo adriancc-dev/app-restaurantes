@@ -33,7 +33,11 @@ export default function LandingPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const normalizedEmail = email.trim()
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      })
       if (error) {
         if (error.message.toLowerCase().includes('email not confirmed')) {
           setError('Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.')
@@ -44,8 +48,26 @@ export default function LandingPage() {
         return
       }
 
-      // Recarga completa para que el middleware detecte la sesión y redirija según el rol
-      window.location.replace('/')
+      const userId = authData.user?.id
+      if (!userId) {
+        setError('No se pudo iniciar sesión. Inténtalo de nuevo.')
+        setLoading(false)
+        return
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle()
+
+      if (profileError) {
+        setError('No se pudo completar el acceso. Inténtalo de nuevo.')
+        setLoading(false)
+        return
+      }
+
+      window.location.replace(profile?.role === 'restaurant' ? '/dashboard' : '/home')
     } catch {
       setError('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.')
       setLoading(false)
@@ -58,8 +80,9 @@ export default function LandingPage() {
     setError('')
     setSuccess('')
 
+    const normalizedEmail = email.trim()
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         data: { role, full_name: fullName },
