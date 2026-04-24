@@ -51,5 +51,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No se pudo iniciar sesión. Inténtalo de nuevo.' }, { status: 500 })
   }
 
+  const { error: persistError } = await supabase.auth.setSession({
+    access_token: data.session.access_token,
+    refresh_token: data.session.refresh_token,
+  })
+
+  if (persistError) {
+    return NextResponse.json({ error: 'No se pudo guardar la sesión. Inténtalo de nuevo.' }, { status: 500 })
+  }
+
   return response
 }
