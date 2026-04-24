@@ -31,6 +31,7 @@ export default function LandingPage() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    if (loading) return
     setLoading(true)
     setError('')
 
@@ -52,28 +53,6 @@ export default function LandingPage() {
 
       if (!authData.user) {
         setError('No se pudo iniciar sesión. Inténtalo de nuevo.')
-        setLoading(false)
-        return
-      }
-
-      const accessToken = authData.session?.access_token
-      const refreshToken = authData.session?.refresh_token
-
-      if (!accessToken || !refreshToken) {
-        setError('No se pudo crear la sesión. Inténtalo de nuevo.')
-        setLoading(false)
-        return
-      }
-
-      const setSessionResponse = await fetch('/api/auth/set-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken, refreshToken }),
-      })
-
-      if (!setSessionResponse.ok) {
-        setError('No se pudo guardar la sesión. Inténtalo de nuevo.')
-        setLoading(false)
         return
       }
 
@@ -82,6 +61,7 @@ export default function LandingPage() {
       router.refresh()
     } catch {
       setError('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.')
+    } finally {
       setLoading(false)
     }
   }
