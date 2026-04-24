@@ -45,13 +45,20 @@ export default function LandingPage() {
       return
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      setError('Error al obtener la sesión. Inténtalo de nuevo.')
+      setLoading(false)
+      return
+    }
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user!.id)
+      .eq('id', user.id)
       .single()
 
+    setLoading(false)
     router.push(profile?.role === 'restaurant' ? '/dashboard' : '/home')
   }
 
