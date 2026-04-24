@@ -49,8 +49,13 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const redirect = profile?.role === 'restaurant' ? '/dashboard' : '/home'
-    return NextResponse.redirect(new URL(redirect, request.url))
+    const redirectUrl = profile?.role === 'restaurant' ? '/dashboard' : '/home'
+    const redirectResponse = NextResponse.redirect(new URL(redirectUrl, request.url))
+    // Copiar cookies de auth para no perder tokens renovados en la redirección
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+    return redirectResponse
   }
 
   return supabaseResponse
