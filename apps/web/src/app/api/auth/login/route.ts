@@ -1,13 +1,12 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 interface LoginBody {
   email?: string
   password?: string
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   let body: LoginBody
 
   try {
@@ -23,16 +22,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Email y contraseña son obligatorios.' }, { status: 400 })
   }
 
-  const cookieStore = await cookies()
+  const response = NextResponse.json({ ok: true })
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () => cookieStore.getAll(),
+        getAll: () => request.cookies.getAll(),
         setAll: (cookiesToSet: { name: string; value: string; options: CookieOptions }[]) => {
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options)
+            response.cookies.set(name, value, options)
           })
         },
       },
@@ -48,5 +47,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 401 })
   }
 
-  return NextResponse.json({ ok: true })
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session) {
+    return NextResponse.json(
+      { error: 'No se pudo establecer la sesión. Inténtalo de nuevo.' },
+      { status: 500 }
+    )
+  }
+
+  return response
 }
