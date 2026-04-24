@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false })
@@ -17,7 +16,6 @@ const APPSTORE_URL =
 
 export default function LandingPage() {
   const supabase = createClient()
-  const router = useRouter()
 
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
@@ -36,29 +34,23 @@ export default function LandingPage() {
     setError('')
 
     try {
-      const normalizedEmail = email.trim()
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
+      const loginResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
       })
-      if (error) {
-        if (error.message.toLowerCase().includes('email not confirmed')) {
-          setError('Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.')
-        } else {
-          setError('Credenciales incorrectas. Inténtalo de nuevo.')
-        }
-        setLoading(false)
-        return
-      }
 
-      if (!authData.user) {
-        setError('No se pudo iniciar sesión. Inténtalo de nuevo.')
+      if (!loginResponse.ok) {
+        const result = (await loginResponse.json().catch(() => ({}))) as { error?: string }
+        setError(result.error ?? 'No se pudo iniciar sesión. Inténtalo de nuevo.')
         return
       }
 
       // Navegacion directa tras login correcto para evitar quedarnos en la landing
-      router.replace('/home')
-      router.refresh()
+      window.location.assign('/home')
     } catch {
       setError('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.')
     } finally {
