@@ -34,13 +34,22 @@ export default function LandingPage() {
     setError('')
 
     try {
+      const formData = new FormData(e.currentTarget as HTMLFormElement)
+      const submittedEmail = String(formData.get('email') ?? email).trim()
+      const submittedPassword = String(formData.get('password') ?? password)
+
+      if (!submittedEmail || !submittedPassword) {
+        setError('Introduce email y contraseña para iniciar sesión.')
+        return
+      }
+
       const loginResponse = await fetch('/api/auth/login', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: email.trim(),
-          password,
+          email: submittedEmail,
+          password: submittedPassword,
         }),
       })
 
@@ -262,6 +271,7 @@ export default function LandingPage() {
               </label>
               <input
                 type="email"
+                name="email"
                 className="input"
                 placeholder="tu@email.com"
                 value={email}
@@ -276,6 +286,7 @@ export default function LandingPage() {
               </label>
               <input
                 type="password"
+                name="password"
                 className="input"
                 placeholder="••••••••"
                 value={password}
