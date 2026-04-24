@@ -47,15 +47,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 401 })
   }
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session) {
-    return NextResponse.json(
-      { error: 'No se pudo establecer la sesión. Inténtalo de nuevo.' },
-      { status: 500 }
-    )
+  if (!data.session) {
+    return NextResponse.json({ error: 'No se pudo iniciar sesión. Inténtalo de nuevo.' }, { status: 500 })
   }
 
   return response
