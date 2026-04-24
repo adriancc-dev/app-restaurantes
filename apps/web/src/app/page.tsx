@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false })
@@ -16,6 +17,7 @@ const APPSTORE_URL =
 
 export default function LandingPage() {
   const supabase = createClient()
+  const router = useRouter()
 
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
@@ -48,26 +50,36 @@ export default function LandingPage() {
         return
       }
 
-      const userId = authData.user?.id
-      if (!userId) {
+      if (!authData.user) {
         setError('No se pudo iniciar sesión. Inténtalo de nuevo.')
         setLoading(false)
         return
       }
 
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle()
+      const accessToken = authData.session?.access_token
+      const refreshToken = authData.session?.refresh_token
 
-      if (profileError) {
-        setError('No se pudo completar el acceso. Inténtalo de nuevo.')
+      if (!accessToken || !refreshToken) {
+        setError('No se pudo crear la sesión. Inténtalo de nuevo.')
         setLoading(false)
         return
       }
 
-      window.location.replace(profile?.role === 'restaurant' ? '/dashboard' : '/home')
+      const setSessionResponse = await fetch('/api/auth/set-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken, refreshToken }),
+      })
+
+      if (!setSessionResponse.ok) {
+        setError('No se pudo guardar la sesión. Inténtalo de nuevo.')
+        setLoading(false)
+        return
+      }
+
+      // Navegacion directa tras login correcto para evitar quedarnos en la landing
+      router.replace('/home')
+      router.refresh()
     } catch {
       setError('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.')
       setLoading(false)
