@@ -26,6 +26,7 @@ export default function LandingPage() {
   const [phone, setPhone] = useState('')
   const [role, setRole] = useState<'user' | 'restaurant'>('user')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
@@ -35,14 +36,20 @@ export default function LandingPage() {
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setError('Credenciales incorrectas. Inténtalo de nuevo.')
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        setError('Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.')
+      } else {
+        setError('Credenciales incorrectas. Inténtalo de nuevo.')
+      }
       setLoading(false)
       return
     }
 
+    const { data: { user } } = await supabase.auth.getUser()
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
+      .eq('id', user!.id)
       .single()
 
     router.push(profile?.role === 'restaurant' ? '/dashboard' : '/home')
@@ -52,17 +59,26 @@ export default function LandingPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccess('')
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { role, full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
 
     if (error) {
       setError(error.message)
+      setLoading(false)
+      return
+    }
+
+    // Email confirmation required — no session yet
+    if (data.user && !data.session) {
+      setSuccess('Hemos enviado un correo de confirmación. Revisa tu bandeja de entrada y pulsa el enlace para activar tu cuenta.')
       setLoading(false)
       return
     }
@@ -77,6 +93,7 @@ export default function LandingPage() {
       }
     }
 
+    setLoading(false)
     router.push(role === 'restaurant' ? '/dashboard' : '/home')
   }
 
@@ -173,6 +190,12 @@ export default function LandingPage() {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">
+              {success}
             </div>
           )}
 
