@@ -43,23 +43,20 @@ export default function LandingPage() {
         return
       }
 
-      const loginResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: submittedEmail,
-          password: submittedPassword,
-        }),
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email: submittedEmail,
+        password: submittedPassword,
       })
 
-      if (!loginResponse.ok) {
-        const result = (await loginResponse.json().catch(() => ({}))) as { error?: string }
-        setError(result.error ?? 'No se pudo iniciar sesión. Inténtalo de nuevo.')
+      if (loginError || !data.user) {
+        if (loginError?.message.toLowerCase().includes('email not confirmed')) {
+          setError('Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.')
+        } else {
+          setError('Credenciales incorrectas. Inténtalo de nuevo.')
+        }
         return
       }
 
-      // Navegacion directa tras login correcto para evitar quedarnos en la landing
       window.location.assign('/home')
     } catch {
       setError('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.')
