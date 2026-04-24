@@ -25,6 +25,14 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error && data.user) {
+      const fullName = data.user.user_metadata?.full_name as string | undefined
+      if (fullName) {
+        await supabase
+          .from('profiles')
+          .update({ full_name: fullName })
+          .eq('id', data.user.id)
+      }
+
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')

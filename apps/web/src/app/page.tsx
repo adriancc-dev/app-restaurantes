@@ -45,21 +45,7 @@ export default function LandingPage() {
       return
     }
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (userError || !user) {
-      setError('Error al obtener la sesión. Inténtalo de nuevo.')
-      setLoading(false)
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    setLoading(false)
-    router.push(profile?.role === 'restaurant' ? '/dashboard' : '/home')
+    router.refresh()
   }
 
   async function handleRegister(e: React.FormEvent) {
@@ -101,7 +87,7 @@ export default function LandingPage() {
     }
 
     setLoading(false)
-    router.push(role === 'restaurant' ? '/dashboard' : '/home')
+    router.refresh()
   }
 
   return (
