@@ -1,5 +1,4 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -7,17 +6,17 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
 
   if (code) {
-    const cookieStore = cookies()
+    // Capturar las cookies que Supabase quiere establecer para ponerlas en la respuesta
+    const pendingCookies: { name: string; value: string; options: CookieOptions }[] = []
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll: () => cookieStore.getAll(),
+          getAll: () => request.cookies.getAll(),
           setAll: (cookiesToSet: { name: string; value: string; options: CookieOptions }[]) => {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
+            pendingCookies.push(...cookiesToSet)
           },
         },
       }
@@ -39,9 +38,15 @@ export async function GET(request: NextRequest) {
         .eq('id', data.user.id)
         .single()
 
-      return NextResponse.redirect(
-        new URL(profile?.role === 'restaurant' ? '/dashboard' : '/home', origin)
-      )
+      const redirectUrl = profile?.role === 'restaurant' ? '/dashboard' : '/home'
+      const response = NextResponse.redirect(new URL(redirectUrl, origin))
+
+      // Escribir las cookies de sesión en la respuesta de redirección
+      pendingCookies.forEach(({ name, value, options }) => {
+        response.cookies.set(name, value, options)
+      })
+
+      return response
     }
   }
 

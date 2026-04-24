@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false })
 
@@ -16,7 +15,6 @@ const APPSTORE_URL =
   process.env.NEXT_PUBLIC_APPSTORE_URL ?? 'https://apps.apple.com'
 
 export default function LandingPage() {
-  const router = useRouter()
   const supabase = createClient()
 
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -34,31 +32,24 @@ export default function LandingPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      if (error.message.toLowerCase().includes('email not confirmed')) {
-        setError('Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.')
-      } else {
-        setError('Credenciales incorrectas. Inténtalo de nuevo.')
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        if (error.message.toLowerCase().includes('email not confirmed')) {
+          setError('Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.')
+        } else {
+          setError('Credenciales incorrectas. Inténtalo de nuevo.')
+        }
+        setLoading(false)
+        return
       }
+
+      // Recarga completa para que el middleware detecte la sesión y redirija según el rol
+      window.location.replace('/')
+    } catch {
+      setError('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.')
       setLoading(false)
-      return
     }
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      setError('Error al iniciar sesión. Inténtalo de nuevo.')
-      setLoading(false)
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    router.push(profile?.role === 'restaurant' ? '/dashboard' : '/home')
   }
 
   async function handleRegister(e: React.FormEvent) {
@@ -99,8 +90,7 @@ export default function LandingPage() {
       }
     }
 
-    setLoading(false)
-    router.refresh()
+    window.location.replace('/')
   }
 
   return (
