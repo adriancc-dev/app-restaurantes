@@ -644,24 +644,26 @@ export default function LandingPage() {
                 : 'Crear cuenta'}
             </button>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                disabled={forgotPasswordLoading}
-                className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
-              >
-                {forgotPasswordLoading ? 'Enviando recuperación...' : '¿Olvidaste tu contraseña?'}
-              </button>
-              <button
-                type="button"
-                onClick={handleResendConfirmation}
-                disabled={resendConfirmationLoading}
-                className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
-              >
-                {resendConfirmationLoading ? 'Reenviando...' : 'Reenviar confirmación de correo'}
-              </button>
-            </div>
+            {mode === 'login' && (
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={forgotPasswordLoading}
+                  className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
+                >
+                  {forgotPasswordLoading ? 'Enviando recuperación...' : '¿Olvidaste tu contraseña?'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResendConfirmation}
+                  disabled={resendConfirmationLoading}
+                  className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
+                >
+                  {resendConfirmationLoading ? 'Reenviando...' : 'Reenviar confirmación de correo'}
+                </button>
+              </div>
+            )}
           </form>
 
           {mode === 'register' && (
