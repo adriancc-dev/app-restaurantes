@@ -21,7 +21,8 @@
     "react-phone-number-input": "^3.4.16",
     "react-qr-code": "^2.0.14",
     "resend": "^3.2.0",
-    "stripe": "^15.7.0"
+    "stripe": "^15.7.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -5,11 +5,127 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
 
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false })
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const TERMS_VERSION = '2026-04'
+const MAX_AUTH_ATTEMPTS = 5
+const AUTH_WINDOW_MS = 15 * 60 * 1000
+const AUTH_LOCK_MS = 15 * 60 * 1000
+const AUTH_ATTEMPTS_STORAGE_KEY = 'auth-attempts-v1'
+
+interface AuthAttemptState {
+  login: {
+    count: number
+    firstAttemptAt: number
+    lockedUntil: number | null
+  }
+  register: {
+    count: number
+    firstAttemptAt: number
+    lockedUntil: number | null
+  }
+}
+
+const loginSchema = z.object({
+  email: z.string().trim().email('Introduce un correo electrónico válido.'),
+  password: z.string().min(1, 'Introduce tu contraseña.'),
+})
+
+const registerSchema = z
+  .object({
+    fullName: z.string().trim().refine((value) => value.split(/\s+/).length === 3, {
+      message: 'Debe tener 3 palabras: 1 nombre y 2 apellidos.',
+    }),
+    email: z.string().trim().email('Introduce un correo electrónico válido.'),
+    phone: z
+      .string()
+      .min(1, 'Introduce un número de teléfono.')
+      .refine((value) => isValidPhoneNumber(value), {
+        message: 'Número no válido para el país seleccionado.',
+      }),
+    password: z
+      .string()
+      .min(8, 'La contraseña debe tener al menos 8 caracteres.')
+      .regex(/[A-Z]/, 'Incluye al menos una mayúscula.')
+      .regex(/[a-z]/, 'Incluye al menos una minúscula.')
+      .regex(/\d/, 'Incluye al menos un número.')
+      .regex(/[^A-Za-z0-9]/, 'Incluye al menos un símbolo.'),
+    confirmPassword: z.string(),
+    acceptTerms: z.boolean().refine((value) => value, {
+      message: 'Debes aceptar los Términos y la Política de Privacidad.',
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Las contraseñas no coinciden.',
+    path: ['confirmPassword'],
+  })
+
+function readAttemptState(): AuthAttemptState {
+  if (typeof window === 'undefined') {
+    return {
+      login: { count: 0, firstAttemptAt: 0, lockedUntil: null },
+      register: { count: 0, firstAttemptAt: 0, lockedUntil: null },
+    }
+  }
+
+  try {
+    const raw = window.localStorage.getItem(AUTH_ATTEMPTS_STORAGE_KEY)
+    if (!raw) {
+      return {
+        login: { count: 0, firstAttemptAt: 0, lockedUntil: null },
+        register: { count: 0, firstAttemptAt: 0, lockedUntil: null },
+      }
+    }
+    return JSON.parse(raw) as AuthAttemptState
+  } catch {
+    return {
+      login: { count: 0, firstAttemptAt: 0, lockedUntil: null },
+      register: { count: 0, firstAttemptAt: 0, lockedUntil: null },
+    }
+  }
+}
+
+function writeAttemptState(state: AuthAttemptState): void {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(AUTH_ATTEMPTS_STORAGE_KEY, JSON.stringify(state))
+}
+
+function getLockRemainingMs(action: 'login' | 'register'): number {
+  const now = Date.now()
+  const state = readAttemptState()[action]
+  if (!state.lockedUntil || state.lockedUntil <= now) return 0
+  return state.lockedUntil - now
+}
+
+function registerAuthFailure(action: 'login' | 'register'): void {
+  const now = Date.now()
+  const state = readAttemptState()
+  const branch = state[action]
+  const isWindowExpired = !branch.firstAttemptAt || now - branch.firstAttemptAt > AUTH_WINDOW_MS
+  const nextCount = isWindowExpired ? 1 : branch.count + 1
+  const shouldLock = nextCount >= MAX_AUTH_ATTEMPTS
+
+  state[action] = {
+    count: shouldLock ? 0 : nextCount,
+    firstAttemptAt: shouldLock ? 0 : (isWindowExpired ? now : branch.firstAttemptAt),
+    lockedUntil: shouldLock ? now + AUTH_LOCK_MS : null,
+  }
+
+  writeAttemptState(state)
+}
+
+function clearAuthFailures(action: 'login' | 'register'): void {
+  const state = readAttemptState()
+  state[action] = { count: 0, firstAttemptAt: 0, lockedUntil: null }
+  writeAttemptState(state)
+}
+
+function formatRemainingMinutes(ms: number): number {
+  return Math.max(1, Math.ceil(ms / 60000))
+}
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 const PLAYSTORE_URL =
@@ -28,16 +144,20 @@ export default function LandingPage() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState<string | undefined>(undefined)
   const [role, setRole] = useState<'user' | 'restaurant'>('user')
+  const [acceptTerms, setAcceptTerms] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
+  const [resendConfirmationLoading, setResendConfirmationLoading] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const normalizedEmail = email.trim()
   const normalizedFullName = fullName.trim().replace(/\s+/g, ' ')
   const fullNameParts = normalizedFullName.length > 0 ? normalizedFullName.split(' ') : []
   const hasValidFullName = fullNameParts.length === 3
   const hasValidPhone = typeof phone === 'string' && isValidPhoneNumber(phone)
-  const isEmailValid = EMAIL_REGEX.test(normalizedEmail)
+  const isEmailValid = z.string().email().safeParse(normalizedEmail).success
   const passwordCriteria = {
     minLength: password.length >= 8,
     uppercase: /[A-Z]/.test(password),
@@ -74,33 +194,44 @@ export default function LandingPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     if (loading) return
+    const lockRemaining = getLockRemainingMs('login')
+    if (lockRemaining > 0) {
+      setError(`Demasiados intentos. Vuelve a intentarlo en ${formatRemainingMinutes(lockRemaining)} min.`)
+      return
+    }
+
     setLoading(true)
     setError('')
+    setSuccess('')
+    setFieldErrors({})
 
     try {
       const formData = new FormData(e.currentTarget as HTMLFormElement)
-      const submittedEmail = String(formData.get('email') ?? email).trim()
-      const submittedPassword = String(formData.get('password') ?? password)
-
-      if (!submittedEmail || !submittedPassword) {
-        setError('Introduce email y contraseña para iniciar sesión.')
+      const parsed = loginSchema.safeParse({
+        email: String(formData.get('email') ?? email),
+        password: String(formData.get('password') ?? password),
+      })
+      if (!parsed.success) {
+        const nextFieldErrors = parsed.error.flatten().fieldErrors
+        setFieldErrors({
+          email: nextFieldErrors.email?.[0] ?? '',
+          password: nextFieldErrors.password?.[0] ?? '',
+        })
         return
       }
 
       const { data, error: loginError } = await supabase.auth.signInWithPassword({
-        email: submittedEmail,
-        password: submittedPassword,
+        email: parsed.data.email,
+        password: parsed.data.password,
       })
 
       if (loginError || !data.user) {
-        if (loginError?.message.toLowerCase().includes('email not confirmed')) {
-          setError('Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.')
-        } else {
-          setError('Credenciales incorrectas. Inténtalo de nuevo.')
-        }
+        registerAuthFailure('login')
+        setError('No se pudo iniciar sesión. Revisa tus credenciales o confirma tu correo.')
         return
       }
 
+      clearAuthFailures('login')
       window.location.assign('/home')
     } catch {
       setError('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.')
@@ -112,67 +243,75 @@ export default function LandingPage() {
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
     if (loading) return
+    const lockRemaining = getLockRemainingMs('register')
+    if (lockRemaining > 0) {
+      setError(`Demasiados intentos de registro. Vuelve a intentarlo en ${formatRemainingMinutes(lockRemaining)} min.`)
+      return
+    }
+
     setLoading(true)
     setError('')
     setSuccess('')
+    setFieldErrors({})
 
-    if (!hasValidFullName) {
-      setError('El nombre completo debe incluir 1 nombre y 2 apellidos (3 palabras).')
-      setLoading(false)
-      return
-    }
+    const parsed = registerSchema.safeParse({
+      fullName,
+      email,
+      phone: phone ?? '',
+      password,
+      confirmPassword,
+      acceptTerms,
+    })
 
-    if (!isEmailValid) {
-      setError('Introduce un correo electrónico válido.')
-      setLoading(false)
-      return
-    }
-
-    if (!hasValidPhone || !phone) {
-      setError('Introduce un número de teléfono válido.')
-      setLoading(false)
-      return
-    }
-
-    if (!isPasswordStrong) {
-      setError('La contraseña no es suficientemente segura.')
-      setLoading(false)
-      return
-    }
-
-    if (!passwordsMatch) {
-      setError('Las contraseñas no coinciden.')
+    if (!parsed.success) {
+      const nextFieldErrors = parsed.error.flatten().fieldErrors
+      setFieldErrors({
+        fullName: nextFieldErrors.fullName?.[0] ?? '',
+        email: nextFieldErrors.email?.[0] ?? '',
+        phone: nextFieldErrors.phone?.[0] ?? '',
+        password: nextFieldErrors.password?.[0] ?? '',
+        confirmPassword: nextFieldErrors.confirmPassword?.[0] ?? '',
+        acceptTerms: nextFieldErrors.acceptTerms?.[0] ?? '',
+      })
       setLoading(false)
       return
     }
 
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
+        email: parsed.data.email,
+        password: parsed.data.password,
         options: {
-          data: { role, full_name: normalizedFullName },
+          data: {
+            role,
+            full_name: parsed.data.fullName.trim().replace(/\s+/g, ' '),
+            terms_accepted: true,
+            terms_version: TERMS_VERSION,
+            terms_accepted_at: new Date().toISOString(),
+          },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       })
 
       if (signUpError) {
-        setError(signUpError.message)
+        registerAuthFailure('register')
+        setError('No se pudo crear la cuenta con esos datos. Revisa la información e inténtalo de nuevo.')
         return
       }
 
+      clearAuthFailures('register')
       // Email confirmation required — no session yet
       if (data.user && !data.session) {
-        setSuccess('Hemos enviado un correo de confirmación. Revisa tu bandeja de entrada y pulsa el enlace para activar tu cuenta.')
+        setSuccess('Si el correo es válido, te hemos enviado un enlace de confirmación.')
         return
       }
 
-      if (phone || normalizedFullName) {
+      if (parsed.data.phone || normalizedFullName) {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           await supabase
             .from('profiles')
-            .update({ full_name: normalizedFullName, phone })
+            .update({ full_name: normalizedFullName, phone: parsed.data.phone })
             .eq('id', user.id)
         }
       }
@@ -181,6 +320,54 @@ export default function LandingPage() {
       setError('No se pudo completar el registro. Inténtalo de nuevo.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleForgotPassword(): Promise<void> {
+    const parsed = loginSchema.pick({ email: true }).safeParse({ email })
+    if (!parsed.success) {
+      setFieldErrors((current) => ({ ...current, email: 'Introduce un correo electrónico válido para recuperar contraseña.' }))
+      return
+    }
+
+    setForgotPasswordLoading(true)
+    setError('')
+    setSuccess('')
+    try {
+      await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      })
+      setSuccess('Si existe una cuenta asociada a ese correo, recibirás un enlace para restablecer la contraseña.')
+    } catch {
+      setError('No hemos podido enviar el correo de recuperación. Inténtalo de nuevo.')
+    } finally {
+      setForgotPasswordLoading(false)
+    }
+  }
+
+  async function handleResendConfirmation(): Promise<void> {
+    const parsed = loginSchema.pick({ email: true }).safeParse({ email })
+    if (!parsed.success) {
+      setFieldErrors((current) => ({ ...current, email: 'Introduce un correo electrónico válido para reenviar confirmación.' }))
+      return
+    }
+
+    setResendConfirmationLoading(true)
+    setError('')
+    setSuccess('')
+    try {
+      await supabase.auth.resend({
+        type: 'signup',
+        email: parsed.data.email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      setSuccess('Si el correo está pendiente, reenviamos el enlace de confirmación.')
+    } catch {
+      setError('No se pudo reenviar el correo de confirmación. Inténtalo de nuevo.')
+    } finally {
+      setResendConfirmationLoading(false)
     }
   }
 
@@ -262,7 +449,7 @@ export default function LandingPage() {
             {(['login', 'register'] as const).map((m) => (
               <button
                 key={m}
-                onClick={() => { setMode(m); setError('') }}
+                onClick={() => { setMode(m); setError(''); setSuccess(''); setFieldErrors({}) }}
                 className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                   mode === m
                     ? 'bg-white text-gray-900 shadow-sm'
@@ -300,12 +487,12 @@ export default function LandingPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
+                    autoComplete="name"
+                    aria-invalid={Boolean(fieldErrors.fullName)}
+                    aria-describedby={fieldErrors.fullName ? 'fullName-error' : undefined}
                   />
-                  {fullName.length > 0 && !hasValidFullName && (
-                    <p className="mt-1 text-xs text-red-600">
-                      Debe tener 3 palabras.
-                    </p>
-                  )}
+                  {fieldErrors.fullName ? <p id="fullName-error" className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p> : null}
+                  {!fieldErrors.fullName && fullName.length > 0 && !hasValidFullName ? <p className="mt-1 text-xs text-red-600">Debe tener 3 palabras.</p> : null}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -320,13 +507,13 @@ export default function LandingPage() {
                       onChange={setPhone}
                       required
                       className="flex items-center gap-2"
+                      autoComplete="tel"
+                      aria-invalid={Boolean(fieldErrors.phone)}
+                      aria-describedby={fieldErrors.phone ? 'phone-error' : undefined}
                     />
                   </div>
-                  {phone && !hasValidPhone && (
-                    <p className="mt-1 text-xs text-red-600">
-                      Número no válido para el país seleccionado.
-                    </p>
-                  )}
+                  {fieldErrors.phone ? <p id="phone-error" className="mt-1 text-xs text-red-600">{fieldErrors.phone}</p> : null}
+                  {!fieldErrors.phone && phone && !hasValidPhone ? <p className="mt-1 text-xs text-red-600">Número no válido para el país seleccionado.</p> : null}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -364,10 +551,12 @@ export default function LandingPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
+                aria-invalid={Boolean(fieldErrors.email)}
+                aria-describedby={fieldErrors.email ? 'email-error' : undefined}
               />
-              {mode === 'register' && email.length > 0 && !isEmailValid && (
-                <p className="mt-1 text-xs text-red-600">Introduce un correo válido (ejemplo: nombre@dominio.com).</p>
-              )}
+              {fieldErrors.email ? <p id="email-error" className="mt-1 text-xs text-red-600">{fieldErrors.email}</p> : null}
+              {!fieldErrors.email && mode === 'register' && email.length > 0 && !isEmailValid ? <p className="mt-1 text-xs text-red-600">Introduce un correo válido (ejemplo: nombre@dominio.com).</p> : null}
             </div>
 
             <div>
@@ -383,7 +572,11 @@ export default function LandingPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                aria-invalid={Boolean(fieldErrors.password)}
+                aria-describedby={fieldErrors.password ? 'password-error' : undefined}
               />
+              {fieldErrors.password ? <p id="password-error" className="mt-1 text-xs text-red-600">{fieldErrors.password}</p> : null}
               {mode === 'register' && password.length > 0 && (
                 <div className="mt-2">
                   <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
@@ -415,10 +608,31 @@ export default function LandingPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={8}
+                  autoComplete="new-password"
+                  aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                  aria-describedby={fieldErrors.confirmPassword ? 'confirm-password-error' : undefined}
                 />
-                {confirmPassword.length > 0 && !passwordsMatch && (
-                  <p className="mt-1 text-xs text-red-600">Las contraseñas no coinciden.</p>
-                )}
+                {fieldErrors.confirmPassword ? <p id="confirm-password-error" className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p> : null}
+                {!fieldErrors.confirmPassword && confirmPassword.length > 0 && !passwordsMatch ? <p className="mt-1 text-xs text-red-600">Las contraseñas no coinciden.</p> : null}
+              </div>
+            )}
+
+            {mode === 'register' && (
+              <div>
+                <label className="flex items-start gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="mt-1"
+                    aria-invalid={Boolean(fieldErrors.acceptTerms)}
+                    aria-describedby={fieldErrors.acceptTerms ? 'terms-error' : undefined}
+                  />
+                  <span>
+                    Acepto los <Link href="/terms" className="text-primary-600 underline">Términos</Link> y la <Link href="/privacy" className="text-primary-600 underline">Política de Privacidad</Link>.
+                  </span>
+                </label>
+                {fieldErrors.acceptTerms ? <p id="terms-error" className="mt-1 text-xs text-red-600">{fieldErrors.acceptTerms}</p> : null}
               </div>
             )}
 
@@ -429,6 +643,25 @@ export default function LandingPage() {
                 ? 'Entrar'
                 : 'Crear cuenta'}
             </button>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={forgotPasswordLoading}
+                className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
+              >
+                {forgotPasswordLoading ? 'Enviando recuperación...' : '¿Olvidaste tu contraseña?'}
+              </button>
+              <button
+                type="button"
+                onClick={handleResendConfirmation}
+                disabled={resendConfirmationLoading}
+                className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
+              >
+                {resendConfirmationLoading ? 'Reenviando...' : 'Reenviar confirmación de correo'}
+              </button>
+            </div>
           </form>
 
           {mode === 'register' && (
