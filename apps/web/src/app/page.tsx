@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
@@ -36,9 +36,10 @@ const loginSchema = z.object({
 
 const registerSchema = z
   .object({
-    fullName: z.string().trim().refine((v) => v.split(/\s+/).length === 3, {
-      message: 'Debe tener 3 palabras: 1 nombre y 2 apellidos.',
-    }),
+    fullName: z.string().trim().min(2, 'Introduce tu nombre completo.').refine(
+      (v) => v.trim().split(/\s+/).filter(Boolean).length >= 2,
+      { message: 'Introduce al menos nombre y un apellido.' }
+    ),
     email: z.string().trim().email('Introduce un correo electrónico válido.'),
     phone: z
       .string()
@@ -136,7 +137,7 @@ const PLAYSTORE_URL = process.env.NEXT_PUBLIC_PLAYSTORE_URL ?? 'https://play.goo
 const APPSTORE_URL = process.env.NEXT_PUBLIC_APPSTORE_URL ?? 'https://apps.apple.com'
 
 export default function LandingPage() {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [email, setEmail] = useState('')
@@ -154,11 +155,12 @@ export default function LandingPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
 
   const normalizedEmail = email.trim()
   const normalizedFullName = fullName.trim().replace(/\s+/g, ' ')
   const fullNameParts = normalizedFullName.length > 0 ? normalizedFullName.split(' ') : []
-  const hasValidFullName = fullNameParts.length === 3
+  const hasValidFullName = fullNameParts.length >= 2
   const hasValidPhone = typeof phone === 'string' && isValidPhoneNumber(phone)
   const isEmailValid = z.string().email().safeParse(normalizedEmail).success
   const criteriaResults = PASSWORD_CRITERIA.map((c) => ({ ...c, met: c.test(password) }))
@@ -229,7 +231,7 @@ export default function LandingPage() {
       }
 
       clearAuthFailures('login')
-      // Redirigir a / — el middleware resuelve la ruta según el rol
+      setRedirecting(true)
       window.location.assign('/')
     } catch {
       setError('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.')
@@ -314,6 +316,7 @@ export default function LandingPage() {
             .eq('id', user.id)
         }
       }
+      setRedirecting(true)
       window.location.replace('/')
     } catch {
       setError('No se pudo completar el registro. Inténtalo de nuevo.')
@@ -564,7 +567,7 @@ export default function LandingPage() {
                         aria-describedby={fieldErrors.fullName ? 'fullName-error' : undefined}
                       />
                       {fieldErrors.fullName ? <p id="fullName-error" className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p> : null}
-                      {!fieldErrors.fullName && fullName.length > 0 && !hasValidFullName ? <p className="mt-1 text-xs text-red-600">Debe tener 3 palabras.</p> : null}
+                      {!fieldErrors.fullName && fullName.length > 0 && !hasValidFullName ? <p className="mt-1 text-xs text-red-600">Introduce al menos nombre y un apellido.</p> : null}
                     </div>
 
                     <div>
@@ -750,8 +753,8 @@ export default function LandingPage() {
                   </div>
                 )}
 
-                <button type="submit" disabled={loading} className="btn-primary w-full text-base mt-2">
-                  {loading ? 'Cargando...' : mode === 'login' ? 'Entrar' : 'Crear cuenta'}
+                <button type="submit" disabled={loading || redirecting} className="btn-primary w-full text-base mt-2">
+                  {redirecting ? 'Redirigiendo...' : loading ? 'Cargando...' : mode === 'login' ? 'Entrar' : 'Crear cuenta'}
                 </button>
 
                 {mode === 'login' && (
