@@ -36,11 +36,7 @@ export default function LandingPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [name1, setName1] = useState('')
-  const [name2, setName2] = useState('')
-  const [name3, setName3] = useState('')
-  const [surname1, setSurname1] = useState('')
-  const [surname2, setSurname2] = useState('')
+  const [fullName, setFullName] = useState('')
   const [countryCode, setCountryCode] = useState('+34')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [role, setRole] = useState<'user' | 'restaurant'>('user')
@@ -49,10 +45,9 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(false)
 
   const normalizedEmail = email.trim()
-  const fullName = [name1, name2, name3, surname1, surname2]
-    .map((segment) => segment.trim())
-    .filter((segment) => segment.length > 0)
-    .join(' ')
+  const normalizedFullName = fullName.trim().replace(/\s+/g, ' ')
+  const fullNameParts = normalizedFullName.length > 0 ? normalizedFullName.split(' ') : []
+  const hasValidFullName = fullNameParts.length === 5
   const normalizedPhone = phoneNumber.replace(/\D/g, '')
   const completePhone = `${countryCode}${normalizedPhone}`
   const isEmailValid = EMAIL_REGEX.test(normalizedEmail)
@@ -134,8 +129,8 @@ export default function LandingPage() {
     setError('')
     setSuccess('')
 
-    if (!name1 || !name2 || !name3 || !surname1 || !surname2) {
-      setError('Completa los 3 nombres y los 2 apellidos.')
+    if (!hasValidFullName) {
+      setError('El nombre completo debe incluir 3 nombres y 2 apellidos (5 palabras).')
       setLoading(false)
       return
     }
@@ -169,7 +164,7 @@ export default function LandingPage() {
         email: normalizedEmail,
         password,
         options: {
-          data: { role, full_name: fullName },
+          data: { role, full_name: normalizedFullName },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       })
@@ -185,12 +180,12 @@ export default function LandingPage() {
         return
       }
 
-      if (completePhone || fullName) {
+      if (completePhone || normalizedFullName) {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           await supabase
             .from('profiles')
-            .update({ full_name: fullName, phone: completePhone })
+            .update({ full_name: normalizedFullName, phone: completePhone })
             .eq('id', user.id)
         }
       }
@@ -309,68 +304,21 @@ export default function LandingPage() {
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre 1
+                    Nombre completo
                   </label>
                   <input
                     type="text"
                     className="input"
-                    placeholder="Primer nombre"
-                    value={name1}
-                    onChange={(e) => setName1(e.target.value)}
+                    placeholder="Ej: Juan Carlos Miguel Pérez Gómez"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     required
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre 2
-                  </label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="Segundo nombre"
-                    value={name2}
-                    onChange={(e) => setName2(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre 3
-                  </label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="Tercer nombre"
-                    value={name3}
-                    onChange={(e) => setName3(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Apellido 1
-                  </label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="Primer apellido"
-                    value={surname1}
-                    onChange={(e) => setSurname1(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Apellido 2
-                  </label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="Segundo apellido"
-                    value={surname2}
-                    onChange={(e) => setSurname2(e.target.value)}
-                    required
-                  />
+                  {fullName.length > 0 && !hasValidFullName && (
+                    <p className="mt-1 text-xs text-red-600">
+                      Debe tener 5 palabras: 3 nombres y 2 apellidos.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
