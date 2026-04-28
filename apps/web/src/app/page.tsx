@@ -474,10 +474,11 @@ export default function LandingPage() {
               {!success && (
                 <form onSubmit={handleForgotPassword} className="mt-6 space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-1">
                       Correo electrónico
                     </label>
                     <input
+                      id="forgot-email"
                       type="email"
                       className="input"
                       placeholder="tu@email.com"
@@ -547,10 +548,11 @@ export default function LandingPage() {
                 {mode === 'register' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
                         Nombre completo
                       </label>
                       <input
+                        id="fullName"
                         type="text"
                         className="input"
                         placeholder="Ej: Juan Pérez Gómez"
@@ -566,11 +568,12 @@ export default function LandingPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
                         Teléfono (extensión país + número)
                       </label>
                       <div className="border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
                         <PhoneInput
+                          id="phone"
                           international
                           defaultCountry="ES"
                           countryCallingCodeEditable={false}
@@ -587,10 +590,10 @@ export default function LandingPage() {
                       {!fieldErrors.phone && phone && !hasValidPhone ? <p className="mt-1 text-xs text-red-600">Número no válido para el país seleccionado.</p> : null}
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <fieldset>
+                      <legend className="block text-sm font-medium text-gray-700 mb-1">
                         Tipo de cuenta
-                      </label>
+                      </legend>
                       <div className="grid grid-cols-2 gap-3">
                         {(['user', 'restaurant'] as const).map((r) => (
                           <button
@@ -607,16 +610,17 @@ export default function LandingPage() {
                           </button>
                         ))}
                       </div>
-                    </div>
+                    </fieldset>
                   </>
                 )}
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                     Correo electrónico
                   </label>
                   <input
+                    id="email"
                     type="email"
                     name="email"
                     className="input"
@@ -634,11 +638,12 @@ export default function LandingPage() {
 
                 {/* Contraseña */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                     Contraseña
                   </label>
                   <div className="relative">
                     <input
+                      id="password"
                       type={showPassword ? 'text' : 'password'}
                       name="password"
                       className="input pr-10"
@@ -691,11 +696,12 @@ export default function LandingPage() {
                 {/* Confirmar contraseña (solo registro) */}
                 {mode === 'register' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
                       Confirmar contraseña
                     </label>
                     <div className="relative">
                       <input
+                        id="confirm-password"
                         type={showConfirmPassword ? 'text' : 'password'}
                         className="input pr-10"
                         placeholder="Repite tu contraseña"
