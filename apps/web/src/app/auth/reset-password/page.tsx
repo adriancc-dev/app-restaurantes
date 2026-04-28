@@ -73,9 +73,7 @@ export default function ResetPasswordPage() {
       }
 
       setSuccess('Contraseña actualizada correctamente. Ya puedes iniciar sesión.')
-      setTimeout(() => {
-        router.replace('/')
-      }, 1200)
+      router.replace('/')
     } catch {
       setError('Ha ocurrido un error al actualizar la contraseña.')
     } finally {
