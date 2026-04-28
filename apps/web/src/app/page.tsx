@@ -433,8 +433,7 @@ export default function LandingPage() {
 
           {mode === 'register' && (
             <p className="mt-4 text-xs text-gray-500 text-center">
-              Las cuentas de restaurante requieren suscripción de{' '}
-              <strong>100€/mes</strong> para activarse.
+              Las cuentas de restaurante requieren suscripción para activarse.
             </p>
           )}
         </div>
