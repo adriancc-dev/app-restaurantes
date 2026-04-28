@@ -114,6 +114,9 @@ importers:
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0
+      libphonenumber-js:
+        specifier: ^1.12.42
+        version: 1.12.42
       next:
         specifier: ^14.2.29
         version: 14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -123,6 +126,9 @@ importers:
       react-dom:
         specifier: ^18.3.0
         version: 18.3.1(react@18.3.1)
+      react-phone-number-input:
+        specifier: ^3.4.16
+        version: 3.4.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-qr-code:
         specifier: ^2.0.14
         version: 2.0.18(react@18.3.1)
@@ -2197,6 +2203,9 @@ packages:
     resolution: {integrity: sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==}
     engines: {node: '>=8'}
 
+  classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
+
   clean-stack@2.2.0:
     resolution: {integrity: sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==}
     engines: {node: '>=6'}
@@ -2336,6 +2345,9 @@ packages:
   cosmiconfig@5.2.1:
     resolution: {integrity: sha512-H65gsXo1SKjf8zmrJ67eJk8aIRKV5ff2D4uKZIBZShbhGSpEmsQOPW/SKMKYhSTrqR7ufy6RP69rPogdaPh/kA==}
     engines: {node: '>=4'}
+
+  country-flag-icons@1.6.16:
+    resolution: {integrity: sha512-HxJVoE/aaZGcUMx1vK/u9430uKGB3ODZDDZJJOqVJQzoHk5v42c0fSp1rk4tDfyr1dVOJjwxRiaBPliBMo2Liw==}
 
   cross-fetch@3.2.0:
     resolution: {integrity: sha512-Q+xVJLoGOeIMXZmbUK4HYk+69cQH6LudR0Vu/pRm2YlU/hDV9CiS0gKUMaWY5f2NeUH9C1nV3bsTlCo0FsTV1Q==}
@@ -3241,6 +3253,17 @@ packages:
   ini@1.3.8:
     resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
 
+  input-format@0.3.14:
+    resolution: {integrity: sha512-gHMrgrbCgmT4uK5Um5eVDUohuV9lcs95ZUUN9Px2Y0VIfjTzT2wF8Q3Z4fwLFm7c5Z2OXCm53FHoovj6SlOKdg==}
+    peerDependencies:
+      react: '>=18.1.0'
+      react-dom: '>=18.1.0'
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   internal-ip@4.3.0:
     resolution: {integrity: sha512-S1zBo1D6zcsyuC6PMmY5+55YMILQ9av8lotMx447Bq6SAgo/sDK6y6uUKmuYhW7eacnIhFfsPmCNYdDzsnnDCg==}
     engines: {node: '>=6'}
@@ -3630,6 +3653,9 @@ packages:
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
+
+  libphonenumber-js@1.12.42:
+    resolution: {integrity: sha512-oKQFPTibqQwZZkChCDVMFVJXMZdyJNqDWZWYNn8BgyAaK/6yFJEowxCY0RVFirRyWP63hMRuKlkSEd9qlvbWXg==}
 
   lighthouse-logger@1.4.2:
     resolution: {integrity: sha512-gPWxznF6TKmUHrOQjlVo2UbaL2EJ71mb2CCeRs/2qBpi4L/g4LUVc9+3lKQ6DTUZwJswfM7ainGrLO1+fOqa2g==}
@@ -4606,6 +4632,12 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  react-phone-number-input@3.4.16:
+    resolution: {integrity: sha512-ix1+SIyGuLxnlAeW+XQNhwOmmDd4Zmr6Ng1eQl0E2XS8xIuue3gdZeBG4LGTMjTIFneOTO9pUPL+AEDhV6+r+A==}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
 
   react-promise-suspense@0.3.4:
     resolution: {integrity: sha512-I42jl7L3Ze6kZaq+7zXWSunBa3b1on5yfvUW6Eo/3fFOj6dZ5Bqmcd264nJbTK/gn1HjjILAjSwnZbV4RpSaNQ==}
@@ -8409,6 +8441,8 @@ snapshots:
 
   ci-info@3.9.0: {}
 
+  classnames@2.5.1: {}
+
   clean-stack@2.2.0: {}
 
   cli-cursor@2.1.0:
@@ -8546,6 +8580,8 @@ snapshots:
       is-directory: 0.3.1
       js-yaml: 3.14.2
       parse-json: 4.0.0
+
+  country-flag-icons@1.6.16: {}
 
   cross-fetch@3.2.0:
     dependencies:
@@ -9673,6 +9709,13 @@ snapshots:
 
   ini@1.3.8: {}
 
+  input-format@0.3.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      prop-types: 15.8.1
+    optionalDependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
   internal-ip@4.3.0:
     dependencies:
       default-gateway: 4.2.0
@@ -10087,6 +10130,8 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
+
+  libphonenumber-js@1.12.42: {}
 
   lighthouse-logger@1.4.2:
     dependencies:
@@ -11174,6 +11219,16 @@ snapshots:
       - encoding
       - supports-color
       - utf-8-validate
+
+  react-phone-number-input@3.4.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      classnames: 2.5.1
+      country-flag-icons: 1.6.16
+      input-format: 0.3.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      libphonenumber-js: 1.12.42
+      prop-types: 15.8.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   react-promise-suspense@0.3.4:
     dependencies:

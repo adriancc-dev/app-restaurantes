@@ -3,22 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 import { createClient } from '@/lib/supabase/client'
 
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false })
-
-const COUNTRY_CODES = [
-  { value: '+34', label: '🇪🇸 +34' },
-  { value: '+33', label: '🇫🇷 +33' },
-  { value: '+39', label: '🇮🇹 +39' },
-  { value: '+44', label: '🇬🇧 +44' },
-  { value: '+49', label: '🇩🇪 +49' },
-  { value: '+52', label: '🇲🇽 +52' },
-  { value: '+54', label: '🇦🇷 +54' },
-  { value: '+57', label: '🇨🇴 +57' },
-  { value: '+58', label: '🇻🇪 +58' },
-  { value: '+1', label: '🇺🇸 +1' },
-] as const
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -37,8 +26,7 @@ export default function LandingPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [countryCode, setCountryCode] = useState('+34')
-  const [phoneNumber, setPhoneNumber] = useState('')
+  const [phone, setPhone] = useState<string | undefined>(undefined)
   const [role, setRole] = useState<'user' | 'restaurant'>('user')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -48,8 +36,7 @@ export default function LandingPage() {
   const normalizedFullName = fullName.trim().replace(/\s+/g, ' ')
   const fullNameParts = normalizedFullName.length > 0 ? normalizedFullName.split(' ') : []
   const hasValidFullName = fullNameParts.length === 3
-  const normalizedPhone = phoneNumber.replace(/\D/g, '')
-  const completePhone = `${countryCode}${normalizedPhone}`
+  const hasValidPhone = typeof phone === 'string' && isValidPhoneNumber(phone)
   const isEmailValid = EMAIL_REGEX.test(normalizedEmail)
   const passwordCriteria = {
     minLength: password.length >= 8,
@@ -141,7 +128,7 @@ export default function LandingPage() {
       return
     }
 
-    if (normalizedPhone.length < 6) {
+    if (!hasValidPhone || !phone) {
       setError('Introduce un número de teléfono válido.')
       setLoading(false)
       return
@@ -180,12 +167,12 @@ export default function LandingPage() {
         return
       }
 
-      if (completePhone || normalizedFullName) {
+      if (phone || normalizedFullName) {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           await supabase
             .from('profiles')
-            .update({ full_name: normalizedFullName, phone: completePhone })
+            .update({ full_name: normalizedFullName, phone })
             .eq('id', user.id)
         }
       }
@@ -324,28 +311,22 @@ export default function LandingPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Teléfono (extensión país + número)
                   </label>
-                  <div className="grid grid-cols-[130px_1fr] gap-2">
-                    <select
-                      className="input"
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      aria-label="Extensión de país"
-                    >
-                      {COUNTRY_CODES.map((code) => (
-                        <option key={code.value} value={code.value}>
-                          {code.label}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="tel"
-                      className="input"
-                      placeholder="600000000"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
+                  <div className="border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
+                    <PhoneInput
+                      international
+                      defaultCountry="ES"
+                      countryCallingCodeEditable={false}
+                      value={phone}
+                      onChange={setPhone}
                       required
+                      className="flex items-center gap-2"
                     />
                   </div>
+                  {phone && !hasValidPhone && (
+                    <p className="mt-1 text-xs text-red-600">
+                      Número no válido para el país seleccionado.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
