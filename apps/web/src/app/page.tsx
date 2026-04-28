@@ -316,7 +316,7 @@ export default function LandingPage() {
                   />
                   {fullName.length > 0 && !hasValidFullName && (
                     <p className="mt-1 text-xs text-red-600">
-                      Debe tener 3 palabras: 1 nombre y 2 apellidos.
+                      Debe tener 3 palabras.
                     </p>
                   )}
                 </div>
