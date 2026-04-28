@@ -16,17 +16,17 @@ const AUTH_WINDOW_MS = 15 * 60 * 1000
 const AUTH_LOCK_MS = 15 * 60 * 1000
 const AUTH_ATTEMPTS_STORAGE_KEY = 'auth-attempts-v1'
 
+const PASSWORD_CRITERIA = [
+  { key: 'minLength', label: 'Al menos 8 caracteres', test: (p: string) => p.length >= 8 },
+  { key: 'uppercase', label: 'Al menos una mayúscula', test: (p: string) => /[A-Z]/.test(p) },
+  { key: 'lowercase', label: 'Al menos una minúscula', test: (p: string) => /[a-z]/.test(p) },
+  { key: 'number', label: 'Al menos un número', test: (p: string) => /\d/.test(p) },
+  { key: 'special', label: 'Al menos un símbolo', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+] as const
+
 interface AuthAttemptState {
-  login: {
-    count: number
-    firstAttemptAt: number
-    lockedUntil: number | null
-  }
-  register: {
-    count: number
-    firstAttemptAt: number
-    lockedUntil: number | null
-  }
+  login: { count: number; firstAttemptAt: number; lockedUntil: number | null }
+  register: { count: number; firstAttemptAt: number; lockedUntil: number | null }
 }
 
 const loginSchema = z.object({
@@ -36,16 +36,14 @@ const loginSchema = z.object({
 
 const registerSchema = z
   .object({
-    fullName: z.string().trim().refine((value) => value.split(/\s+/).length === 3, {
+    fullName: z.string().trim().refine((v) => v.split(/\s+/).length === 3, {
       message: 'Debe tener 3 palabras: 1 nombre y 2 apellidos.',
     }),
     email: z.string().trim().email('Introduce un correo electrónico válido.'),
     phone: z
       .string()
       .min(1, 'Introduce un número de teléfono.')
-      .refine((value) => isValidPhoneNumber(value), {
-        message: 'Número no válido para el país seleccionado.',
-      }),
+      .refine((v) => isValidPhoneNumber(v), { message: 'Número no válido para el país seleccionado.' }),
     password: z
       .string()
       .min(8, 'La contraseña debe tener al menos 8 caracteres.')
@@ -54,11 +52,11 @@ const registerSchema = z
       .regex(/\d/, 'Incluye al menos un número.')
       .regex(/[^A-Za-z0-9]/, 'Incluye al menos un símbolo.'),
     confirmPassword: z.string(),
-    acceptTerms: z.boolean().refine((value) => value, {
+    acceptTerms: z.boolean().refine((v) => v, {
       message: 'Debes aceptar los Términos y la Política de Privacidad.',
     }),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((d) => d.password === d.confirmPassword, {
     message: 'Las contraseñas no coinciden.',
     path: ['confirmPassword'],
   })
@@ -70,21 +68,12 @@ function readAttemptState(): AuthAttemptState {
       register: { count: 0, firstAttemptAt: 0, lockedUntil: null },
     }
   }
-
   try {
     const raw = window.localStorage.getItem(AUTH_ATTEMPTS_STORAGE_KEY)
-    if (!raw) {
-      return {
-        login: { count: 0, firstAttemptAt: 0, lockedUntil: null },
-        register: { count: 0, firstAttemptAt: 0, lockedUntil: null },
-      }
-    }
+    if (!raw) return { login: { count: 0, firstAttemptAt: 0, lockedUntil: null }, register: { count: 0, firstAttemptAt: 0, lockedUntil: null } }
     return JSON.parse(raw) as AuthAttemptState
   } catch {
-    return {
-      login: { count: 0, firstAttemptAt: 0, lockedUntil: null },
-      register: { count: 0, firstAttemptAt: 0, lockedUntil: null },
-    }
+    return { login: { count: 0, firstAttemptAt: 0, lockedUntil: null }, register: { count: 0, firstAttemptAt: 0, lockedUntil: null } }
   }
 }
 
@@ -107,13 +96,11 @@ function registerAuthFailure(action: 'login' | 'register'): void {
   const isWindowExpired = !branch.firstAttemptAt || now - branch.firstAttemptAt > AUTH_WINDOW_MS
   const nextCount = isWindowExpired ? 1 : branch.count + 1
   const shouldLock = nextCount >= MAX_AUTH_ATTEMPTS
-
   state[action] = {
     count: shouldLock ? 0 : nextCount,
     firstAttemptAt: shouldLock ? 0 : (isWindowExpired ? now : branch.firstAttemptAt),
     lockedUntil: shouldLock ? now + AUTH_LOCK_MS : null,
   }
-
   writeAttemptState(state)
 }
 
@@ -127,17 +114,31 @@ function formatRemainingMinutes(ms: number): number {
   return Math.max(1, Math.ceil(ms / 60000))
 }
 
+function EyeIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  )
+}
+
+function EyeOffIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+    </svg>
+  )
+}
+
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-const PLAYSTORE_URL =
-  process.env.NEXT_PUBLIC_PLAYSTORE_URL ??
-  'https://play.google.com/store/apps'
-const APPSTORE_URL =
-  process.env.NEXT_PUBLIC_APPSTORE_URL ?? 'https://apps.apple.com'
+const PLAYSTORE_URL = process.env.NEXT_PUBLIC_PLAYSTORE_URL ?? 'https://play.google.com/store/apps'
+const APPSTORE_URL = process.env.NEXT_PUBLIC_APPSTORE_URL ?? 'https://apps.apple.com'
 
 export default function LandingPage() {
   const supabase = createClient()
 
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -151,6 +152,8 @@ export default function LandingPage() {
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
   const [resendConfirmationLoading, setResendConfirmationLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const normalizedEmail = email.trim()
   const normalizedFullName = fullName.trim().replace(/\s+/g, ' ')
@@ -158,40 +161,30 @@ export default function LandingPage() {
   const hasValidFullName = fullNameParts.length === 3
   const hasValidPhone = typeof phone === 'string' && isValidPhoneNumber(phone)
   const isEmailValid = z.string().email().safeParse(normalizedEmail).success
-  const passwordCriteria = {
-    minLength: password.length >= 8,
-    uppercase: /[A-Z]/.test(password),
-    lowercase: /[a-z]/.test(password),
-    number: /\d/.test(password),
-    special: /[^A-Za-z0-9]/.test(password),
-  }
-  const passwordScore = Object.values(passwordCriteria).filter(Boolean).length
-  const isPasswordStrong = passwordScore >= 4
-  const passwordStrength = {
-    label:
-      passwordScore <= 1
-        ? 'Muy débil'
-        : passwordScore <= 2
-        ? 'Débil'
-        : passwordScore <= 3
-        ? 'Media'
-        : passwordScore <= 4
-        ? 'Fuerte'
-        : 'Muy fuerte',
-    colorClass:
-      passwordScore <= 1
-        ? 'bg-red-500'
-        : passwordScore <= 2
-        ? 'bg-orange-500'
-        : passwordScore <= 3
-        ? 'bg-yellow-500'
-        : passwordScore <= 4
-        ? 'bg-lime-500'
-        : 'bg-green-600',
-  }
+  const criteriaResults = PASSWORD_CRITERIA.map((c) => ({ ...c, met: c.test(password) }))
+  const passwordScore = criteriaResults.filter((c) => c.met).length
   const passwordsMatch = password === confirmPassword
+  const strengthLabel =
+    passwordScore <= 1 ? 'Muy débil' :
+    passwordScore <= 2 ? 'Débil' :
+    passwordScore <= 3 ? 'Media' :
+    passwordScore <= 4 ? 'Fuerte' : 'Muy fuerte'
+  const strengthColor =
+    passwordScore <= 1 ? 'bg-red-500' :
+    passwordScore <= 2 ? 'bg-orange-500' :
+    passwordScore <= 3 ? 'bg-yellow-500' :
+    passwordScore <= 4 ? 'bg-lime-500' : 'bg-green-600'
 
-  async function handleLogin(e: React.FormEvent) {
+  function switchMode(next: 'login' | 'register' | 'forgot') {
+    setMode(next)
+    setError('')
+    setSuccess('')
+    setFieldErrors({})
+    setShowPassword(false)
+    setShowConfirmPassword(false)
+  }
+
+  async function handleLogin(e: React.FormEvent): Promise<void> {
     e.preventDefault()
     if (loading) return
     const lockRemaining = getLockRemainingMs('login')
@@ -227,12 +220,17 @@ export default function LandingPage() {
 
       if (loginError || !data.user) {
         registerAuthFailure('login')
-        setError('No se pudo iniciar sesión. Revisa tus credenciales o confirma tu correo.')
+        if (loginError?.message?.toLowerCase().includes('email not confirmed')) {
+          setError('Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.')
+        } else {
+          setError('No se pudo iniciar sesión. Revisa tus credenciales.')
+        }
         return
       }
 
       clearAuthFailures('login')
-      window.location.assign('/home')
+      // Redirigir a / — el middleware resuelve la ruta según el rol
+      window.location.assign('/')
     } catch {
       setError('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.')
     } finally {
@@ -240,7 +238,7 @@ export default function LandingPage() {
     }
   }
 
-  async function handleRegister(e: React.FormEvent) {
+  async function handleRegister(e: React.FormEvent): Promise<void> {
     e.preventDefault()
     if (loading) return
     const lockRemaining = getLockRemainingMs('register')
@@ -285,6 +283,7 @@ export default function LandingPage() {
           data: {
             role,
             full_name: parsed.data.fullName.trim().replace(/\s+/g, ' '),
+            phone: parsed.data.phone,
             terms_accepted: true,
             terms_version: TERMS_VERSION,
             terms_accepted_at: new Date().toISOString(),
@@ -300,9 +299,9 @@ export default function LandingPage() {
       }
 
       clearAuthFailures('register')
-      // Email confirmation required — no session yet
+
       if (data.user && !data.session) {
-        setSuccess('Si el correo es válido, te hemos enviado un enlace de confirmación.')
+        setSuccess('Si el correo es válido, te hemos enviado un enlace de confirmación. Revisa tu bandeja de entrada.')
         return
       }
 
@@ -323,10 +322,11 @@ export default function LandingPage() {
     }
   }
 
-  async function handleForgotPassword(): Promise<void> {
+  async function handleForgotPassword(e: React.FormEvent): Promise<void> {
+    e.preventDefault()
     const parsed = loginSchema.pick({ email: true }).safeParse({ email })
     if (!parsed.success) {
-      setFieldErrors((current) => ({ ...current, email: 'Introduce un correo electrónico válido para recuperar contraseña.' }))
+      setFieldErrors({ email: 'Introduce un correo electrónico válido para recuperar contraseña.' })
       return
     }
 
@@ -335,7 +335,7 @@ export default function LandingPage() {
     setSuccess('')
     try {
       await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
       })
       setSuccess('Si existe una cuenta asociada a ese correo, recibirás un enlace para restablecer la contraseña.')
     } catch {
@@ -359,9 +359,7 @@ export default function LandingPage() {
       await supabase.auth.resend({
         type: 'signup',
         email: parsed.data.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       })
       setSuccess('Si el correo está pendiente, reenviamos el enlace de confirmación.')
     } catch {
@@ -431,7 +429,6 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* QR Code */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 inline-block border border-white/20">
             <p className="text-sm text-white/80 mb-3 text-center">
               Escanea para acceder desde tu móvil
@@ -444,232 +441,340 @@ export default function LandingPage() {
 
         {/* Columna derecha: formulario */}
         <div className="bg-white rounded-3xl p-8 shadow-2xl">
-          {/* Tabs */}
-          <div className="flex rounded-xl bg-gray-100 p-1 mb-6">
-            {(['login', 'register'] as const).map((m) => (
+
+          {/* ── MODO RECUPERAR CONTRASEÑA ── */}
+          {mode === 'forgot' ? (
+            <>
               <button
-                key={m}
-                onClick={() => { setMode(m); setError(''); setSuccess(''); setFieldErrors({}) }}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
-                  mode === m
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                onClick={() => switchMode('login')}
+                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6"
               >
-                {m === 'login' ? 'Iniciar sesión' : 'Registrarse'}
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+                Volver al inicio de sesión
               </button>
-            ))}
-          </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
-              {error}
-            </div>
-          )}
+              <h2 className="text-xl font-bold text-gray-900">Recuperar contraseña</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Introduce tu correo y te enviaremos un enlace para restablecer tu contraseña.
+              </p>
 
-          {success && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">
-              {success}
-            </div>
-          )}
-
-          <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4">
-            {mode === 'register' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre completo
-                  </label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="Ej: Juan Pérez Gómez"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    autoComplete="name"
-                    aria-invalid={Boolean(fieldErrors.fullName)}
-                    aria-describedby={fieldErrors.fullName ? 'fullName-error' : undefined}
-                  />
-                  {fieldErrors.fullName ? <p id="fullName-error" className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p> : null}
-                  {!fieldErrors.fullName && fullName.length > 0 && !hasValidFullName ? <p className="mt-1 text-xs text-red-600">Debe tener 3 palabras.</p> : null}
+              {error ? (
+                <div role="alert" className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+                  {error}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Teléfono (extensión país + número)
-                  </label>
-                  <div className="border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
-                    <PhoneInput
-                      international
-                      defaultCountry="ES"
-                      countryCallingCodeEditable={false}
-                      value={phone}
-                      onChange={setPhone}
+              ) : null}
+              {success ? (
+                <div role="status" className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">
+                  {success}
+                </div>
+              ) : null}
+
+              {!success && (
+                <form onSubmit={handleForgotPassword} className="mt-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Correo electrónico
+                    </label>
+                    <input
+                      type="email"
+                      className="input"
+                      placeholder="tu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="flex items-center gap-2"
-                      autoComplete="tel"
-                      aria-invalid={Boolean(fieldErrors.phone)}
-                      aria-describedby={fieldErrors.phone ? 'phone-error' : undefined}
+                      autoComplete="email"
+                      aria-invalid={Boolean(fieldErrors.email)}
+                      aria-describedby={fieldErrors.email ? 'forgot-email-error' : undefined}
                     />
+                    {fieldErrors.email ? (
+                      <p id="forgot-email-error" className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                    ) : null}
                   </div>
-                  {fieldErrors.phone ? <p id="phone-error" className="mt-1 text-xs text-red-600">{fieldErrors.phone}</p> : null}
-                  {!fieldErrors.phone && phone && !hasValidPhone ? <p className="mt-1 text-xs text-red-600">Número no válido para el país seleccionado.</p> : null}
+                  <button
+                    type="submit"
+                    disabled={forgotPasswordLoading}
+                    className="btn-primary w-full text-base"
+                  >
+                    {forgotPasswordLoading ? 'Enviando enlace...' : 'Enviar enlace de recuperación'}
+                  </button>
+                </form>
+              )}
+
+              {success && (
+                <button
+                  onClick={() => switchMode('login')}
+                  className="mt-6 btn-primary w-full text-base"
+                >
+                  Volver al inicio de sesión
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              {/* ── TABS LOGIN / REGISTRO ── */}
+              <div className="flex rounded-xl bg-gray-100 p-1 mb-6">
+                {(['login', 'register'] as const).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => switchMode(m)}
+                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                      mode === m
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {m === 'login' ? 'Iniciar sesión' : 'Registrarse'}
+                  </button>
+                ))}
+              </div>
+
+              {error ? (
+                <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+                  {error}
                 </div>
+              ) : null}
+              {success ? (
+                <div role="status" className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">
+                  {success}
+                </div>
+              ) : null}
+
+              <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4">
+
+                {/* Campos exclusivos de registro */}
+                {mode === 'register' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Nombre completo
+                      </label>
+                      <input
+                        type="text"
+                        className="input"
+                        placeholder="Ej: Juan Pérez Gómez"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                        autoComplete="name"
+                        aria-invalid={Boolean(fieldErrors.fullName)}
+                        aria-describedby={fieldErrors.fullName ? 'fullName-error' : undefined}
+                      />
+                      {fieldErrors.fullName ? <p id="fullName-error" className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p> : null}
+                      {!fieldErrors.fullName && fullName.length > 0 && !hasValidFullName ? <p className="mt-1 text-xs text-red-600">Debe tener 3 palabras.</p> : null}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Teléfono (extensión país + número)
+                      </label>
+                      <div className="border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
+                        <PhoneInput
+                          international
+                          defaultCountry="ES"
+                          countryCallingCodeEditable={false}
+                          value={phone}
+                          onChange={setPhone}
+                          required
+                          className="flex items-center gap-2"
+                          autoComplete="tel"
+                          aria-invalid={Boolean(fieldErrors.phone)}
+                          aria-describedby={fieldErrors.phone ? 'phone-error' : undefined}
+                        />
+                      </div>
+                      {fieldErrors.phone ? <p id="phone-error" className="mt-1 text-xs text-red-600">{fieldErrors.phone}</p> : null}
+                      {!fieldErrors.phone && phone && !hasValidPhone ? <p className="mt-1 text-xs text-red-600">Número no válido para el país seleccionado.</p> : null}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tipo de cuenta
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {(['user', 'restaurant'] as const).map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => setRole(r)}
+                            className={`py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                              role === r
+                                ? 'border-primary-500 bg-primary-50 text-primary-700'
+                                : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                            }`}
+                          >
+                            {r === 'user' ? '👤 Cliente' : '🍽️ Restaurante'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tipo de cuenta
+                    Correo electrónico
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {(['user', 'restaurant'] as const).map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => setRole(r)}
-                        className={`py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                          role === r
-                            ? 'border-primary-500 bg-primary-50 text-primary-700'
-                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                        }`}
-                      >
-                        {r === 'user' ? '👤 Cliente' : '🍽️ Restaurante'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Correo electrónico
-              </label>
-              <input
-                type="email"
-                name="email"
-                className="input"
-                placeholder="tu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                aria-invalid={Boolean(fieldErrors.email)}
-                aria-describedby={fieldErrors.email ? 'email-error' : undefined}
-              />
-              {fieldErrors.email ? <p id="email-error" className="mt-1 text-xs text-red-600">{fieldErrors.email}</p> : null}
-              {!fieldErrors.email && mode === 'register' && email.length > 0 && !isEmailValid ? <p className="mt-1 text-xs text-red-600">Introduce un correo válido (ejemplo: nombre@dominio.com).</p> : null}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña
-              </label>
-              <input
-                type="password"
-                name="password"
-                className="input"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                aria-invalid={Boolean(fieldErrors.password)}
-                aria-describedby={fieldErrors.password ? 'password-error' : undefined}
-              />
-              {fieldErrors.password ? <p id="password-error" className="mt-1 text-xs text-red-600">{fieldErrors.password}</p> : null}
-              {mode === 'register' && password.length > 0 && (
-                <div className="mt-2">
-                  <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
-                    <div
-                      className={`h-full transition-all ${passwordStrength.colorClass}`}
-                      style={{ width: `${(passwordScore / 5) * 100}%` }}
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-600">
-                    Seguridad: <span className="font-semibold">{passwordStrength.label}</span>
-                  </p>
-                  <p className="mt-1 text-[11px] text-gray-500">
-                    Usa al menos 8 caracteres con mayúsculas, minúsculas, números y símbolos.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {mode === 'register' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirmar contraseña
-                </label>
-                <input
-                  type="password"
-                  className="input"
-                  placeholder="Repite tu contraseña"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  aria-invalid={Boolean(fieldErrors.confirmPassword)}
-                  aria-describedby={fieldErrors.confirmPassword ? 'confirm-password-error' : undefined}
-                />
-                {fieldErrors.confirmPassword ? <p id="confirm-password-error" className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p> : null}
-                {!fieldErrors.confirmPassword && confirmPassword.length > 0 && !passwordsMatch ? <p className="mt-1 text-xs text-red-600">Las contraseñas no coinciden.</p> : null}
-              </div>
-            )}
-
-            {mode === 'register' && (
-              <div>
-                <label className="flex items-start gap-2 text-sm text-gray-700">
                   <input
-                    type="checkbox"
-                    checked={acceptTerms}
-                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                    className="mt-1"
-                    aria-invalid={Boolean(fieldErrors.acceptTerms)}
-                    aria-describedby={fieldErrors.acceptTerms ? 'terms-error' : undefined}
+                    type="email"
+                    name="email"
+                    className="input"
+                    placeholder="tu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                    aria-invalid={Boolean(fieldErrors.email)}
+                    aria-describedby={fieldErrors.email ? 'email-error' : undefined}
                   />
-                  <span>
-                    Acepto los <Link href="/terms" className="text-primary-600 underline">Términos</Link> y la <Link href="/privacy" className="text-primary-600 underline">Política de Privacidad</Link>.
-                  </span>
-                </label>
-                {fieldErrors.acceptTerms ? <p id="terms-error" className="mt-1 text-xs text-red-600">{fieldErrors.acceptTerms}</p> : null}
-              </div>
-            )}
+                  {fieldErrors.email ? <p id="email-error" className="mt-1 text-xs text-red-600">{fieldErrors.email}</p> : null}
+                  {!fieldErrors.email && mode === 'register' && email.length > 0 && !isEmailValid ? <p className="mt-1 text-xs text-red-600">Introduce un correo válido (ejemplo: nombre@dominio.com).</p> : null}
+                </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full text-base mt-2">
-              {loading
-                ? 'Cargando...'
-                : mode === 'login'
-                ? 'Entrar'
-                : 'Crear cuenta'}
-            </button>
+                {/* Contraseña */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Contraseña
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      className="input pr-10"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={8}
+                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                      aria-invalid={Boolean(fieldErrors.password)}
+                      aria-describedby={fieldErrors.password ? 'password-error' : undefined}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
+                  {fieldErrors.password ? <p id="password-error" className="mt-1 text-xs text-red-600">{fieldErrors.password}</p> : null}
 
-            {mode === 'login' && (
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  disabled={forgotPasswordLoading}
-                  className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
-                >
-                  {forgotPasswordLoading ? 'Enviando recuperación...' : '¿Olvidaste tu contraseña?'}
+                  {mode === 'register' && password.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${strengthColor}`}
+                          style={{ width: `${(passwordScore / 5) * 100}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-600">
+                        Seguridad: <span className="font-semibold">{strengthLabel}</span>
+                      </p>
+                      <ul className="space-y-1 pt-0.5">
+                        {criteriaResults.map(({ key, label, met }) => (
+                          <li
+                            key={key}
+                            className={`flex items-center gap-1.5 text-xs transition-colors ${met ? 'text-green-600' : 'text-gray-400'}`}
+                          >
+                            <span>{met ? '✓' : '○'}</span>
+                            {label}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Confirmar contraseña (solo registro) */}
+                {mode === 'register' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Confirmar contraseña
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        className="input pr-10"
+                        placeholder="Repite tu contraseña"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        autoComplete="new-password"
+                        aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                        aria-describedby={fieldErrors.confirmPassword ? 'confirm-password-error' : undefined}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((v) => !v)}
+                        aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                      </button>
+                    </div>
+                    {fieldErrors.confirmPassword ? <p id="confirm-password-error" className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p> : null}
+                    {!fieldErrors.confirmPassword && confirmPassword.length > 0 && !passwordsMatch ? <p className="mt-1 text-xs text-red-600">Las contraseñas no coinciden.</p> : null}
+                  </div>
+                )}
+
+                {/* Términos (solo registro) */}
+                {mode === 'register' && (
+                  <div>
+                    <label className="flex items-start gap-2 text-sm text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={acceptTerms}
+                        onChange={(e) => setAcceptTerms(e.target.checked)}
+                        className="mt-1"
+                        aria-invalid={Boolean(fieldErrors.acceptTerms)}
+                        aria-describedby={fieldErrors.acceptTerms ? 'terms-error' : undefined}
+                      />
+                      <span>
+                        Acepto los{' '}
+                        <Link href="/terms" className="text-primary-600 underline">Términos</Link>
+                        {' '}y la{' '}
+                        <Link href="/privacy" className="text-primary-600 underline">Política de Privacidad</Link>.
+                      </span>
+                    </label>
+                    {fieldErrors.acceptTerms ? <p id="terms-error" className="mt-1 text-xs text-red-600">{fieldErrors.acceptTerms}</p> : null}
+                  </div>
+                )}
+
+                <button type="submit" disabled={loading} className="btn-primary w-full text-base mt-2">
+                  {loading ? 'Cargando...' : mode === 'login' ? 'Entrar' : 'Crear cuenta'}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleResendConfirmation}
-                  disabled={resendConfirmationLoading}
-                  className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
-                >
-                  {resendConfirmationLoading ? 'Reenviando...' : 'Reenviar confirmación de correo'}
-                </button>
-              </div>
-            )}
-          </form>
 
-          {mode === 'register' && (
-            <p className="mt-4 text-xs text-gray-500 text-center">
-              Las cuentas de restaurante requieren suscripción para activarse.
-            </p>
+                {mode === 'login' && (
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => switchMode('forgot')}
+                      className="text-primary-700 hover:text-primary-900 underline"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResendConfirmation}
+                      disabled={resendConfirmationLoading}
+                      className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
+                    >
+                      {resendConfirmationLoading ? 'Reenviando...' : 'Reenviar confirmación de correo'}
+                    </button>
+                  </div>
+                )}
+              </form>
+
+              {mode === 'register' && (
+                <p className="mt-4 text-xs text-gray-500 text-center">
+                  Las cuentas de restaurante requieren suscripción para activarse.
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>

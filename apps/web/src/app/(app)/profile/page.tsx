@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Link from 'next/link'
 import type { Reservation, Restaurant, ReservationStatus } from '@repo/shared'
+import DeleteAccountButton from '@/components/DeleteAccountButton'
 
 type ReservationRow = Omit<Reservation, 'restaurant'> & {
   restaurant: Pick<Restaurant, 'name' | 'image_url'> | null
@@ -87,6 +88,15 @@ export default async function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Zona de peligro */}
+      <div className="card p-6 border-red-100">
+        <h2 className="text-base font-semibold text-red-700 mb-1">Zona de peligro</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Eliminar tu cuenta borra permanentemente todos tus datos y reservas. Esta acción no se puede deshacer.
+        </p>
+        <DeleteAccountButton />
+      </div>
     </div>
   )
 }

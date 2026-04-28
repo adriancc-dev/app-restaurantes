@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import RestaurantNavbar from '@/components/RestaurantNavbar'
 
 export default async function RestaurantLayout({
@@ -17,7 +16,7 @@ export default async function RestaurantLayout({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, full_name')
     .eq('id', user.id)
     .single()
 
@@ -25,7 +24,7 @@ export default async function RestaurantLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <RestaurantNavbar />
+      <RestaurantNavbar userName={profile.full_name ?? user.email ?? ''} />
       <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
     </div>
   )
