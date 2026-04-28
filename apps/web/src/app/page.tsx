@@ -47,7 +47,7 @@ export default function LandingPage() {
   const normalizedEmail = email.trim()
   const normalizedFullName = fullName.trim().replace(/\s+/g, ' ')
   const fullNameParts = normalizedFullName.length > 0 ? normalizedFullName.split(' ') : []
-  const hasValidFullName = fullNameParts.length === 5
+  const hasValidFullName = fullNameParts.length === 3
   const normalizedPhone = phoneNumber.replace(/\D/g, '')
   const completePhone = `${countryCode}${normalizedPhone}`
   const isEmailValid = EMAIL_REGEX.test(normalizedEmail)
@@ -130,7 +130,7 @@ export default function LandingPage() {
     setSuccess('')
 
     if (!hasValidFullName) {
-      setError('El nombre completo debe incluir 3 nombres y 2 apellidos (5 palabras).')
+      setError('El nombre completo debe incluir 1 nombre y 2 apellidos (3 palabras).')
       setLoading(false)
       return
     }
@@ -309,14 +309,14 @@ export default function LandingPage() {
                   <input
                     type="text"
                     className="input"
-                    placeholder="Ej: Juan Carlos Miguel Pérez Gómez"
+                    placeholder="Ej: Juan Pérez Gómez"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
                   />
                   {fullName.length > 0 && !hasValidFullName && (
                     <p className="mt-1 text-xs text-red-600">
-                      Debe tener 5 palabras: 3 nombres y 2 apellidos.
+                      Debe tener 3 palabras: 1 nombre y 2 apellidos.
                     </p>
                   )}
                 </div>
