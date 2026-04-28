@@ -7,6 +7,21 @@ import { createClient } from '@/lib/supabase/client'
 
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false })
 
+const COUNTRY_CODES = [
+  { value: '+34', label: '🇪🇸 +34' },
+  { value: '+33', label: '🇫🇷 +33' },
+  { value: '+39', label: '🇮🇹 +39' },
+  { value: '+44', label: '🇬🇧 +44' },
+  { value: '+49', label: '🇩🇪 +49' },
+  { value: '+52', label: '🇲🇽 +52' },
+  { value: '+54', label: '🇦🇷 +54' },
+  { value: '+57', label: '🇨🇴 +57' },
+  { value: '+58', label: '🇻🇪 +58' },
+  { value: '+1', label: '🇺🇸 +1' },
+] as const
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 const PLAYSTORE_URL =
   process.env.NEXT_PUBLIC_PLAYSTORE_URL ??
@@ -20,12 +35,59 @@ export default function LandingPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [phone, setPhone] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [name1, setName1] = useState('')
+  const [name2, setName2] = useState('')
+  const [name3, setName3] = useState('')
+  const [surname1, setSurname1] = useState('')
+  const [surname2, setSurname2] = useState('')
+  const [countryCode, setCountryCode] = useState('+34')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [role, setRole] = useState<'user' | 'restaurant'>('user')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const normalizedEmail = email.trim()
+  const fullName = [name1, name2, name3, surname1, surname2]
+    .map((segment) => segment.trim())
+    .filter((segment) => segment.length > 0)
+    .join(' ')
+  const normalizedPhone = phoneNumber.replace(/\D/g, '')
+  const completePhone = `${countryCode}${normalizedPhone}`
+  const isEmailValid = EMAIL_REGEX.test(normalizedEmail)
+  const passwordCriteria = {
+    minLength: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  }
+  const passwordScore = Object.values(passwordCriteria).filter(Boolean).length
+  const isPasswordStrong = passwordScore >= 4
+  const passwordStrength = {
+    label:
+      passwordScore <= 1
+        ? 'Muy débil'
+        : passwordScore <= 2
+        ? 'Débil'
+        : passwordScore <= 3
+        ? 'Media'
+        : passwordScore <= 4
+        ? 'Fuerte'
+        : 'Muy fuerte',
+    colorClass:
+      passwordScore <= 1
+        ? 'bg-red-500'
+        : passwordScore <= 2
+        ? 'bg-orange-500'
+        : passwordScore <= 3
+        ? 'bg-yellow-500'
+        : passwordScore <= 4
+        ? 'bg-lime-500'
+        : 'bg-green-600',
+  }
+  const passwordsMatch = password === confirmPassword
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -67,44 +129,77 @@ export default function LandingPage() {
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
+    if (loading) return
     setLoading(true)
     setError('')
     setSuccess('')
 
-    const normalizedEmail = email.trim()
-    const { data, error } = await supabase.auth.signUp({
-      email: normalizedEmail,
-      password,
-      options: {
-        data: { role, full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-
-    if (error) {
-      setError(error.message)
+    if (!name1 || !name2 || !name3 || !surname1 || !surname2) {
+      setError('Completa los 3 nombres y los 2 apellidos.')
       setLoading(false)
       return
     }
 
-    // Email confirmation required — no session yet
-    if (data.user && !data.session) {
-      setSuccess('Hemos enviado un correo de confirmación. Revisa tu bandeja de entrada y pulsa el enlace para activar tu cuenta.')
+    if (!isEmailValid) {
+      setError('Introduce un correo electrónico válido.')
       setLoading(false)
       return
     }
 
-    if (phone || fullName) {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        await supabase
-          .from('profiles')
-          .update({ full_name: fullName, phone })
-          .eq('id', user.id)
+    if (normalizedPhone.length < 6) {
+      setError('Introduce un número de teléfono válido.')
+      setLoading(false)
+      return
+    }
+
+    if (!isPasswordStrong) {
+      setError('La contraseña no es suficientemente segura.')
+      setLoading(false)
+      return
+    }
+
+    if (!passwordsMatch) {
+      setError('Las contraseñas no coinciden.')
+      setLoading(false)
+      return
+    }
+
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          data: { role, full_name: fullName },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (signUpError) {
+        setError(signUpError.message)
+        return
       }
-    }
 
-    window.location.replace('/')
+      // Email confirmation required — no session yet
+      if (data.user && !data.session) {
+        setSuccess('Hemos enviado un correo de confirmación. Revisa tu bandeja de entrada y pulsa el enlace para activar tu cuenta.')
+        return
+      }
+
+      if (completePhone || fullName) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await supabase
+            .from('profiles')
+            .update({ full_name: fullName, phone: completePhone })
+            .eq('id', user.id)
+        }
+      }
+      window.location.replace('/')
+    } catch {
+      setError('No se pudo completar el registro. Inténtalo de nuevo.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -214,29 +309,95 @@ export default function LandingPage() {
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre completo
+                    Nombre 1
                   </label>
                   <input
                     type="text"
                     className="input"
-                    placeholder="Tu nombre"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Primer nombre"
+                    value={name1}
+                    onChange={(e) => setName1(e.target.value)}
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Teléfono
+                    Nombre 2
                   </label>
                   <input
-                    type="tel"
+                    type="text"
                     className="input"
-                    placeholder="600 000 000"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Segundo nombre"
+                    value={name2}
+                    onChange={(e) => setName2(e.target.value)}
                     required
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre 3
+                  </label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Tercer nombre"
+                    value={name3}
+                    onChange={(e) => setName3(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Apellido 1
+                  </label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Primer apellido"
+                    value={surname1}
+                    onChange={(e) => setSurname1(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Apellido 2
+                  </label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Segundo apellido"
+                    value={surname2}
+                    onChange={(e) => setSurname2(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Teléfono (extensión país + número)
+                  </label>
+                  <div className="grid grid-cols-[130px_1fr] gap-2">
+                    <select
+                      className="input"
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                      aria-label="Extensión de país"
+                    >
+                      {COUNTRY_CODES.map((code) => (
+                        <option key={code.value} value={code.value}>
+                          {code.label}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      className="input"
+                      placeholder="600000000"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -275,6 +436,9 @@ export default function LandingPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+              {mode === 'register' && email.length > 0 && !isEmailValid && (
+                <p className="mt-1 text-xs text-red-600">Introduce un correo válido (ejemplo: nombre@dominio.com).</p>
+              )}
             </div>
 
             <div>
@@ -289,9 +453,45 @@ export default function LandingPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
               />
+              {mode === 'register' && password.length > 0 && (
+                <div className="mt-2">
+                  <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${passwordStrength.colorClass}`}
+                      style={{ width: `${(passwordScore / 5) * 100}%` }}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-600">
+                    Seguridad: <span className="font-semibold">{passwordStrength.label}</span>
+                  </p>
+                  <p className="mt-1 text-[11px] text-gray-500">
+                    Usa al menos 8 caracteres con mayúsculas, minúsculas, números y símbolos.
+                  </p>
+                </div>
+              )}
             </div>
+
+            {mode === 'register' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirmar contraseña
+                </label>
+                <input
+                  type="password"
+                  className="input"
+                  placeholder="Repite tu contraseña"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+                {confirmPassword.length > 0 && !passwordsMatch && (
+                  <p className="mt-1 text-xs text-red-600">Las contraseñas no coinciden.</p>
+                )}
+              </div>
+            )}
 
             <button type="submit" disabled={loading} className="btn-primary w-full text-base mt-2">
               {loading
