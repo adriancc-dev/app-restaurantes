@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import RestaurantCard from '@/components/RestaurantCard'
 import { LOCATIONS } from '@repo/shared'
@@ -9,6 +10,11 @@ interface Props {
 
 export default async function RestaurantsPage({ searchParams }: Props) {
   const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/')
+
   const selectedSlug = searchParams.location
 
   const location = LOCATIONS.find((l) => l.slug === selectedSlug)

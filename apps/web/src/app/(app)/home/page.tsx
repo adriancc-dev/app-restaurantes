@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { LOCATIONS } from '@repo/shared'
@@ -13,6 +14,8 @@ export default async function HomePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  if (!user) redirect('/')
 
   const { data: profile } = user
     ? await supabase

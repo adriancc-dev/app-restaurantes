@@ -9,15 +9,18 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (cookiesToSet: { name: string; value: string; options: CookieOptions }[]) => {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options })
           supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+          supabaseResponse.cookies.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: '', ...options })
+          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse.cookies.set({ name, value: '', ...options })
         },
       },
     }
@@ -30,12 +33,12 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const isProtected =
+    pathname.startsWith('/home') ||
     pathname.startsWith('/restaurants') ||
     pathname.startsWith('/calendar') ||
     pathname.startsWith('/profile') ||
     pathname.startsWith('/dashboard')
 
-  // Redirigir al login si no autenticado en rutas protegidas
   if (isProtected && !user) {
     return NextResponse.redirect(new URL('/', request.url))
   }
@@ -50,9 +53,8 @@ export async function middleware(request: NextRequest) {
 
     const redirectUrl = profile?.role === 'restaurant' ? '/dashboard' : '/home'
     const redirectResponse = NextResponse.redirect(new URL(redirectUrl, request.url))
-    // Copiar cookies de auth para no perder tokens renovados en la redirección
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie.name, cookie.value)
+    supabaseResponse.cookies.getAll().forEach(({ name, value }) => {
+      redirectResponse.cookies.set(name, value)
     })
     return redirectResponse
   }
