@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const type = searchParams.get('type')
 
   if (code) {
     const pendingCookies: { name: string; value: string; options: CookieOptions }[] = []
@@ -34,6 +35,14 @@ export async function GET(request: NextRequest) {
           .from('profiles')
           .update({ full_name: fullName })
           .eq('id', data.user.id)
+      }
+
+      if (type === 'recovery') {
+        const response = NextResponse.redirect(new URL('/auth/reset-password', origin))
+        pendingCookies.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options)
+        })
+        return response
       }
 
       const { data: profile } = await supabase
