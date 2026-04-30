@@ -31,23 +31,21 @@ export default function Navbar({ userName }: NavbarProps) {
   const firstName = userName?.split(' ')[0] ?? ''
 
   return (
-    <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
+    <nav className="bg-black/90 backdrop-blur-md sticky top-0 z-40 border-b border-white/10 shadow-lg shadow-black/20">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link href="/home" className="text-xl font-bold text-primary-600 shrink-0">
+        <Link href="/home" className="text-xl font-bold text-white tracking-tight shrink-0">
           🍽️ ReservApp
         </Link>
 
-        {/* Desktop links */}
         <div className="hidden md:flex items-center gap-1 flex-1">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 text-sm font-medium transition-all duration-200 ${
                 pathname.startsWith(l.href)
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  ? 'text-white border-b-2 border-primary-500 pb-[6px]'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               {l.label}
@@ -55,31 +53,29 @@ export default function Navbar({ userName }: NavbarProps) {
           ))}
         </div>
 
-        {/* Desktop: user + logout */}
         <div className="hidden md:flex items-center gap-3 shrink-0">
           {firstName && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-semibold text-primary-700 select-none">
+              <div className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-500/30 flex items-center justify-center text-sm font-semibold text-primary-400 select-none">
                 {initial}
               </div>
-              <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate">
+              <span className="text-sm font-medium text-gray-300 max-w-[120px] truncate">
                 {firstName}
               </span>
             </div>
           )}
           <button
             onClick={handleLogout}
-            className="text-sm text-gray-500 hover:text-gray-700 font-medium"
+            className="text-sm text-gray-500 hover:text-gray-300 font-medium transition-colors"
           >
             Salir
           </button>
         </div>
 
-        {/* Mobile: hamburger */}
         <button
           onClick={() => setIsOpen((v) => !v)}
           aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
-          className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-white/10 transition-colors"
         >
           {isOpen ? (
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -93,15 +89,14 @@ export default function Navbar({ userName }: NavbarProps) {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-1">
+        <div className="md:hidden border-t border-white/10 bg-black/95 px-4 py-3 space-y-1">
           {userName && (
             <div className="flex items-center gap-2 px-3 py-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-semibold text-primary-700 select-none">
+              <div className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-500/30 flex items-center justify-center text-sm font-semibold text-primary-400 select-none">
                 {initial}
               </div>
-              <span className="text-sm font-medium text-gray-700 truncate">{userName}</span>
+              <span className="text-sm font-medium text-gray-300 truncate">{userName}</span>
             </div>
           )}
           {links.map((l) => (
@@ -111,8 +106,8 @@ export default function Navbar({ userName }: NavbarProps) {
               onClick={() => setIsOpen(false)}
               className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 pathname.startsWith(l.href)
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  ? 'bg-white/10 text-white'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               {l.label}
@@ -120,7 +115,7 @@ export default function Navbar({ userName }: NavbarProps) {
           ))}
           <button
             onClick={handleLogout}
-            className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
           >
             Cerrar sesión
           </button>
