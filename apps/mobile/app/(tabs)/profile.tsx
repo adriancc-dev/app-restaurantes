@@ -6,24 +6,37 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Switch,
 } from 'react-native'
 import { router } from 'expo-router'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Reservation } from '@repo/shared'
+import {
+  isBiometricsAvailable,
+  isBiometricsEnabled,
+  enableBiometrics,
+  disableBiometrics,
+} from '@/lib/biometrics'
+
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!
 
 export default function ProfileScreen() {
   const { session, profile } = useAuth()
   const [reservations, setReservations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [biometricsAvailable, setBiometricsAvailable] = useState(false)
+  const [biometricsEnabled, setBiometricsEnabled] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   useEffect(() => {
-    if (session) loadReservations()
+    if (session) void loadReservations()
+    void checkBiometrics()
   }, [session])
 
-  async function loadReservations() {
+  async function loadReservations(): Promise<void> {
     const today = format(new Date(), 'yyyy-MM-dd')
     const { data } = await supabase
       .from('reservations')
@@ -33,12 +46,35 @@ export default function ProfileScreen() {
       .eq('status', 'confirmed')
       .order('date', { ascending: true })
       .limit(10)
-
     setReservations(data ?? [])
     setLoading(false)
   }
 
-  async function handleCancelReservation(id: string) {
+  async function checkBiometrics(): Promise<void> {
+    const available = await isBiometricsAvailable()
+    const enabled = await isBiometricsEnabled()
+    setBiometricsAvailable(available)
+    setBiometricsEnabled(enabled)
+  }
+
+  async function handleToggleBiometrics(value: boolean): Promise<void> {
+    if (value) {
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (currentSession && session?.user.email) {
+        await enableBiometrics(
+          session.user.email,
+          currentSession.access_token,
+          currentSession.refresh_token
+        )
+        setBiometricsEnabled(true)
+      }
+    } else {
+      await disableBiometrics()
+      setBiometricsEnabled(false)
+    }
+  }
+
+  async function handleCancelReservation(id: string): Promise<void> {
     Alert.alert('Cancelar reserva', '¿Seguro que quieres cancelar esta reserva?', [
       { text: 'No' },
       {
@@ -46,15 +82,53 @@ export default function ProfileScreen() {
         style: 'destructive',
         onPress: async () => {
           await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', id)
-          loadReservations()
+          void loadReservations()
         },
       },
     ])
   }
 
-  async function handleLogout() {
+  async function handleLogout(): Promise<void> {
+    await disableBiometrics()
     await supabase.auth.signOut()
-    router.replace('/(auth)/')
+    router.replace('/(auth)')
+  }
+
+  function confirmDeleteAccount(): void {
+    Alert.alert(
+      '¿Eliminar cuenta?',
+      'Esta acción es irreversible. Se borrarán todos tus datos, reservas y suscripciones activas.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar cuenta',
+          style: 'destructive',
+          onPress: handleDeleteAccount,
+        },
+      ]
+    )
+  }
+
+  async function handleDeleteAccount(): Promise<void> {
+    setDeletingAccount(true)
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/delete-account`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${currentSession?.access_token}` },
+      })
+      if (!res.ok) {
+        Alert.alert('Error', 'No se pudo eliminar la cuenta. Inténtalo de nuevo.')
+        return
+      }
+      await disableBiometrics()
+      await supabase.auth.signOut()
+      router.replace('/(auth)')
+    } catch {
+      Alert.alert('Error', 'No se pudo eliminar la cuenta. Comprueba tu conexión.')
+    } finally {
+      setDeletingAccount(false)
+    }
   }
 
   return (
@@ -77,21 +151,16 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Reservas próximas */}
+      {/* Próximas reservas */}
       <View className="px-4 mt-6">
-        <Text className="font-bold text-gray-900 text-lg mb-3">
-          Próximas reservas
-        </Text>
+        <Text className="font-bold text-gray-900 text-lg mb-3">Próximas reservas</Text>
 
         {loading ? (
           <ActivityIndicator color="#f97316" />
         ) : reservations.length > 0 ? (
-          <View className="space-y-3">
+          <View className="gap-3">
             {reservations.map((r) => (
-              <View
-                key={r.id}
-                className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
-              >
+              <View key={r.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                 <View className="flex-row items-center gap-3">
                   <View className="bg-primary-50 rounded-xl px-3 py-2 items-center min-w-[56px]">
                     <Text className="text-primary-600 font-bold text-base">
@@ -104,8 +173,7 @@ export default function ProfileScreen() {
                   <View className="flex-1">
                     <Text className="font-bold text-gray-900">{r.restaurant?.name}</Text>
                     <Text className="text-gray-500 text-sm">
-                      {r.party_size} personas
-                      {r.notes ? ` · ${r.notes}` : ''}
+                      {r.party_size} personas{r.notes ? ` · ${r.notes}` : ''}
                     </Text>
                   </View>
                 </View>
@@ -123,7 +191,7 @@ export default function ProfileScreen() {
             <Text className="text-3xl mb-2">📋</Text>
             <Text className="text-gray-500 font-medium">Sin reservas próximas</Text>
             <TouchableOpacity
-              onPress={() => router.push('/(tabs)/')}
+              onPress={() => router.push('/(tabs)')}
               className="mt-3 bg-primary-500 px-5 py-2.5 rounded-xl"
             >
               <Text className="text-white font-semibold text-sm">Hacer una reserva</Text>
@@ -132,12 +200,50 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      <TouchableOpacity
-        onPress={handleLogout}
-        className="mx-4 mt-8 mb-12 py-3 items-center border border-gray-200 rounded-xl"
-      >
-        <Text className="text-gray-500 font-medium">Cerrar sesión</Text>
-      </TouchableOpacity>
+      {/* Configuración */}
+      <View className="px-4 mt-6">
+        <Text className="font-bold text-gray-900 text-lg mb-3">Configuración</Text>
+
+        {biometricsAvailable && (
+          <View className="bg-white rounded-2xl px-4 py-3.5 border border-gray-100 mb-2 flex-row items-center justify-between">
+            <View className="flex-row items-center gap-3">
+              <Ionicons name="finger-print" size={22} color="#f97316" />
+              <View>
+                <Text className="text-gray-900 font-medium text-sm">
+                  {`Face ID / ${process.env.EXPO_OS === 'android' ? 'Huella' : 'Touch ID'}`}
+                </Text>
+                <Text className="text-gray-400 text-xs">Acceso biométrico</Text>
+              </View>
+            </View>
+            <Switch
+              value={biometricsEnabled}
+              onValueChange={handleToggleBiometrics}
+              trackColor={{ false: '#e5e7eb', true: '#fb923c' }}
+              thumbColor="white"
+            />
+          </View>
+        )}
+      </View>
+
+      {/* Acciones de cuenta */}
+      <View className="px-4 mt-4 mb-12 gap-2">
+        <TouchableOpacity
+          onPress={handleLogout}
+          className="py-3.5 items-center border border-gray-200 rounded-xl bg-white"
+        >
+          <Text className="text-gray-600 font-medium">Cerrar sesión</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={confirmDeleteAccount}
+          disabled={deletingAccount}
+          className="py-3.5 items-center border border-red-200 rounded-xl"
+        >
+          <Text className="text-red-500 font-medium text-sm">
+            {deletingAccount ? 'Eliminando cuenta...' : 'Eliminar mi cuenta'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   )
 }

@@ -120,7 +120,7 @@ export default function RestaurantDashboard() {
         ))}
 
         <TouchableOpacity
-          onPress={async () => { await supabase.auth.signOut(); router.replace('/(auth)/') }}
+          onPress={async () => { await supabase.auth.signOut(); router.replace('/(auth)') }}
           className="py-3 items-center border border-gray-200 rounded-xl mt-4"
         >
           <Text className="text-gray-500 font-medium">Cerrar sesión</Text>

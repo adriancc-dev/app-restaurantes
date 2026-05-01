@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       const phone = meta?.phone as string | undefined
 
       // Sincronizar metadatos del usuario con la tabla de perfiles
-      if (fullName ?? phone) {
+      if (fullName || phone) {
         await supabase
           .from('profiles')
           .update({

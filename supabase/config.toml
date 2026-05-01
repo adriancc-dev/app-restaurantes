@@ -30,3 +30,15 @@ enable_signup = true
 enable_signup = true
 double_confirm_changes = false
 enable_confirmations = false
+
+[auth.email.template.confirmation]
+subject = "Confirma tu cuenta en ReservApp"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Restablece tu contraseña en ReservApp"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "Confirma tu nuevo correo en ReservApp"
+content_path = "./supabase/templates/email-change.html"

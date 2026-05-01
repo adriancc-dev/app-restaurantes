@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import CookieBanner from '@/components/CookieBanner'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'ReservApp — Restaurantes en Moncofa, Nules y La Vall d\'Uixó',
@@ -20,10 +21,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className="antialiased">
-        {children}
-        <CookieBanner />
+        <ThemeProvider>
+          {children}
+          <CookieBanner />
+        </ThemeProvider>
       </body>
     </html>
   )
