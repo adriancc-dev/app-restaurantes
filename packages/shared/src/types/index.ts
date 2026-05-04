@@ -4,6 +4,23 @@ export type SubscriptionStatus = 'active' | 'inactive' | 'past_due' | 'canceled'
 
 export type ReservationStatus = 'confirmed' | 'cancelled' | 'completed' | 'no_show'
 
+export interface DietaryPreferences {
+  vegetarian: boolean
+  vegan: boolean
+  glutenFree: boolean
+  lactoseFree: boolean
+  nutAllergy: boolean
+  shellfishAllergy: boolean
+  other: string
+}
+
+export interface NotificationPreferences {
+  reservation_confirmed: boolean
+  reminder_24h: boolean
+  reminder_1h: boolean
+  restaurant_news: boolean
+}
+
 export interface Profile {
   id: string
   email: string
@@ -12,6 +29,9 @@ export interface Profile {
   role: UserRole
   full_name: string | null
   avatar_url: string | null
+  birthday: string | null
+  dietary_preferences: Partial<DietaryPreferences>
+  notification_preferences: Partial<NotificationPreferences>
   created_at: string
 }
 
@@ -67,6 +87,23 @@ export interface Reservation {
   notes: string | null
   notification_24h_sent: boolean
   notification_1h_sent: boolean
+  created_at: string
+}
+
+export interface Review {
+  id: string
+  user_id: string
+  restaurant_id: string
+  reservation_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+}
+
+export interface UserFavorite {
+  user_id: string
+  restaurant_id: string
+  restaurant?: Restaurant
   created_at: string
 }
 

@@ -2,6 +2,11 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+// Usar onboarding@resend.dev hasta que el dominio esté verificado en Resend.
+// Para verificarlo: https://resend.com/domains → añadir apprestaurantes.com → copiar registros DNS.
+// Una vez verificado, cambiar a: 'ReservApp <noreply@apprestaurantes.com>'
+const EMAIL_FROM = process.env.EMAIL_FROM ?? 'ReservApp <onboarding@resend.dev>'
+
 const emailWrapper = (previewText: string, body: string) => `
 <!DOCTYPE html>
 <html lang="es" xmlns="http://www.w3.org/1999/xhtml">
@@ -159,10 +164,71 @@ export async function sendBookingConfirmation({
   `
 
   await resend.emails.send({
-    from: 'ReservApp <noreply@apprestaurantes.com>',
+    from: EMAIL_FROM,
     to,
     subject: `✅ Reserva confirmada en ${restaurantName}`,
     html: emailWrapper(`Tu mesa en ${restaurantName} está confirmada para el ${date} a las ${time}`, body),
+  })
+}
+
+export async function sendProfileChangeOTP({
+  to,
+  code,
+}: {
+  to: string
+  code: string
+}): Promise<void> {
+  const body = `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td align="center" style="padding-bottom:28px;">
+          <div style="display:inline-block;background:#fff7ed;border-radius:50%;width:72px;height:72px;line-height:72px;text-align:center;font-size:32px;">
+            🔐
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827;text-align:center;line-height:1.2;">
+      Código de verificación
+    </h1>
+    <p style="margin:0 0 32px;font-size:15px;color:#6b7280;text-align:center;line-height:1.7;">
+      Has solicitado cambiar los datos de tu perfil.<br/>
+      Introduce este código para confirmar la acción.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px;">
+      <tr>
+        <td align="center">
+          <div style="display:inline-block;background:#f9fafb;border:2px solid #f97316;border-radius:16px;padding:20px 48px;">
+            <p style="margin:0;font-size:40px;font-weight:800;color:#111827;letter-spacing:12px;font-family:monospace;">
+              ${code}
+            </p>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 20px;">
+          <p style="margin:0;font-size:13px;color:#9a3412;line-height:1.6;text-align:center;">
+            ⏱️ Este código caduca en <strong>10 minutos</strong>. Úsalo en la aplicación.
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;line-height:1.6;">
+      Si no has solicitado este cambio, ignora este correo. Tu cuenta está segura.
+    </p>
+  `
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to,
+    subject: '🔐 Código de verificación — ReservApp',
+    html: emailWrapper('Tu código de verificación para cambiar los datos de tu perfil', body),
   })
 }
 
@@ -268,7 +334,7 @@ export async function sendBookingReminder({
   `
 
   await resend.emails.send({
-    from: 'ReservApp <noreply@apprestaurantes.com>',
+    from: EMAIL_FROM,
     to,
     subject: `🔔 Recordatorio: mañana tienes mesa en ${restaurantName}`,
     html: emailWrapper(`Recuerda tu reserva en ${restaurantName} mañana ${date} a las ${time}`, body),
