@@ -68,17 +68,16 @@ export default function BookingForm({
     return (
       <div className="text-center py-8">
         <div className="text-5xl mb-4">🎉</div>
-        <h3 className="text-xl font-bold text-gray-900">¡Reserva confirmada!</h3>
-        <p className="text-gray-500 mt-2">
+        <h3 className="text-xl font-bold text-white">¡Reserva confirmada!</h3>
+        <p className="text-[#908fa0] mt-2">
           Recibirás un email de confirmación en {userEmail}.
         </p>
-        <p className="text-gray-500 mt-1">
-          <strong>{restaurantName}</strong> · {format(new Date(date + 'T12:00:00'), "d 'de' MMMM", { locale: es })} · {selectedTime} · {partySize} personas
+        <p className="text-[#908fa0] mt-1">
+          <strong className="text-white">{restaurantName}</strong> ·{' '}
+          {format(new Date(date + 'T12:00:00'), "d 'de' MMMM", { locale: es })} ·{' '}
+          {selectedTime} · {partySize} personas
         </p>
-        <button
-          onClick={() => router.push('/profile')}
-          className="btn-primary mt-6"
-        >
+        <button onClick={() => router.push('/profile')} className="btn-primary mt-6">
           Ver mis reservas
         </button>
       </div>
@@ -88,14 +87,14 @@ export default function BookingForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+        <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">
           {error}
         </div>
       )}
 
       {/* Selector de fecha */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+        <label className="block text-sm font-medium text-[#d4e4fa] mb-2">Fecha</label>
         <div className="flex gap-2 overflow-x-auto pb-2">
           {availableDates.slice(0, 14).map((d) => {
             const dateObj = new Date(d + 'T12:00:00')
@@ -104,10 +103,10 @@ export default function BookingForm({
                 key={d}
                 type="button"
                 onClick={() => { setDate(d); setSelectedTime(null) }}
-                className={`shrink-0 flex flex-col items-center px-4 py-3 rounded-xl border-2 transition-all ${
+                className={`shrink-0 flex flex-col items-center px-4 py-3 rounded-lg border-2 transition-all ${
                   date === d
-                    ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    ? 'border-primary-500 bg-primary-500/10 text-primary-300'
+                    : 'border-[#464554] text-[#908fa0] hover:border-primary-500/50 hover:text-white'
                 }`}
               >
                 <span className="text-xs font-medium uppercase">
@@ -123,7 +122,7 @@ export default function BookingForm({
 
       {/* Selector de hora */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Hora</label>
+        <label className="block text-sm font-medium text-[#d4e4fa] mb-2">Hora</label>
         {slots.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {slots.map((slot) => (
@@ -132,17 +131,17 @@ export default function BookingForm({
                 type="button"
                 disabled={!slot.available}
                 onClick={() => setSelectedTime(slot.time)}
-                className={`px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${
+                className={`px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
                   selectedTime === slot.time
-                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                    ? 'border-primary-500 bg-primary-500/10 text-primary-300'
                     : slot.available
-                    ? 'border-gray-200 text-gray-700 hover:border-gray-300'
-                    : 'border-gray-100 text-gray-300 cursor-not-allowed bg-gray-50'
+                    ? 'border-[#464554] text-[#d4e4fa] hover:border-primary-500/50 hover:text-white'
+                    : 'border-[#273647] text-[#464554] cursor-not-allowed bg-white/[0.02]'
                 }`}
               >
                 {slot.time}
                 {slot.available && (
-                  <span className="ml-1.5 text-xs text-gray-400">
+                  <span className="ml-1.5 text-xs text-[#908fa0]">
                     ({slot.remaining} libres)
                   </span>
                 )}
@@ -150,30 +149,30 @@ export default function BookingForm({
             ))}
           </div>
         ) : (
-          <p className="text-gray-400 text-sm">Restaurante cerrado este día</p>
+          <p className="text-[#908fa0] text-sm">Restaurante cerrado este día</p>
         )}
       </div>
 
       {/* Número de personas */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-[#d4e4fa] mb-2">
           Número de personas
         </label>
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setPartySize((p) => Math.max(1, p - 1))}
-            className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-lg font-bold hover:bg-gray-50"
+            className="w-10 h-10 rounded-lg border border-[#464554] flex items-center justify-center text-lg font-bold text-[#d4e4fa] hover:bg-white/5 transition-colors"
           >
             −
           </button>
-          <span className="text-xl font-bold text-gray-900 w-8 text-center">
+          <span className="text-xl font-bold text-white w-8 text-center">
             {partySize}
           </span>
           <button
             type="button"
             onClick={() => setPartySize((p) => Math.min(20, p + 1))}
-            className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-lg font-bold hover:bg-gray-50"
+            className="w-10 h-10 rounded-lg border border-[#464554] flex items-center justify-center text-lg font-bold text-[#d4e4fa] hover:bg-white/5 transition-colors"
           >
             +
           </button>
@@ -182,7 +181,7 @@ export default function BookingForm({
 
       {/* Notas */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-[#d4e4fa] mb-2">
           Notas (opcional)
         </label>
         <textarea

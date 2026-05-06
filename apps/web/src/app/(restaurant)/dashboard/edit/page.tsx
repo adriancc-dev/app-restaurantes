@@ -82,22 +82,22 @@ export default function EditRestaurantPage() {
   }
 
   if (loading) {
-    return <div className="animate-pulse text-gray-400 p-8">Cargando...</div>
+    return <div className="animate-pulse text-[#908fa0] p-8">Cargando...</div>
   }
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Editar restaurante</h1>
+      <h1 className="text-3xl font-bold text-white">Editar restaurante</h1>
 
       {message && (
-        <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm">
+        <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-sm">
           {message}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
             Nombre del restaurante *
           </label>
           <input
@@ -110,7 +110,7 @@ export default function EditRestaurantPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
             Descripción
           </label>
           <textarea
@@ -122,7 +122,7 @@ export default function EditRestaurantPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
             Localización *
           </label>
           <select
@@ -139,7 +139,7 @@ export default function EditRestaurantPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
             Dirección
           </label>
           <input
@@ -153,7 +153,7 @@ export default function EditRestaurantPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
               Teléfono
             </label>
             <input
@@ -164,7 +164,7 @@ export default function EditRestaurantPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
               Email de contacto
             </label>
             <input
@@ -177,7 +177,7 @@ export default function EditRestaurantPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
             Link a la carta / menú
           </label>
           <input
@@ -190,7 +190,7 @@ export default function EditRestaurantPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
             URL de imagen del restaurante
           </label>
           <input

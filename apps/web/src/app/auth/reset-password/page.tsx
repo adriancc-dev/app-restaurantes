@@ -101,34 +101,34 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-500 via-primary-600 to-orange-700 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#051424] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500/10 border border-primary-500/20 rounded-2xl mb-4">
             <span className="text-3xl">🔐</span>
           </div>
           <h1 className="text-2xl font-bold text-white">Restablecer contraseña</h1>
-          <p className="mt-1 text-sm text-white/80">Elige una nueva contraseña segura para tu cuenta</p>
+          <p className="mt-1 text-sm text-[#908fa0]">Elige una nueva contraseña segura para tu cuenta</p>
         </div>
 
-        <div className="bg-white rounded-3xl p-8 shadow-2xl">
+        <div className="bg-[#0d1c2d] border border-white/10 rounded-2xl p-8 shadow-2xl shadow-black/40">
           {success ? (
             <div className="text-center py-6">
               <div className="text-5xl mb-4">✅</div>
-              <h2 className="text-lg font-semibold text-gray-900">¡Contraseña actualizada!</h2>
-              <p className="mt-2 text-sm text-gray-500">Redirigiendo al inicio de sesión...</p>
+              <h2 className="text-lg font-semibold text-white">¡Contraseña actualizada!</h2>
+              <p className="mt-2 text-sm text-[#908fa0]">Redirigiendo al inicio de sesión...</p>
             </div>
           ) : (
             <>
               {error ? (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">
                   {error}
                 </div>
               ) : null}
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
                     Nueva contraseña
                   </label>
                   <input
@@ -144,27 +144,27 @@ export default function ResetPasswordPage() {
                     aria-describedby={fieldErrors.password ? 'password-error' : undefined}
                   />
                   {fieldErrors.password ? (
-                    <p id="password-error" className="mt-1 text-xs text-red-600">
+                    <p id="password-error" className="mt-1 text-xs text-red-400">
                       {fieldErrors.password}
                     </p>
                   ) : null}
 
                   {password.length > 0 && (
                     <div className="mt-3 space-y-2">
-                      <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-[#273647] overflow-hidden">
                         <div
                           className={`h-full transition-all duration-300 ${strengthColor}`}
                           style={{ width: `${(passwordScore / 5) * 100}%` }}
                         />
                       </div>
-                      <p className="text-xs text-gray-600">
-                        Seguridad: <span className="font-semibold">{strengthLabel}</span>
+                      <p className="text-xs text-[#908fa0]">
+                        Seguridad: <span className="font-semibold text-[#d4e4fa]">{strengthLabel}</span>
                       </p>
                       <ul className="space-y-1 pt-1">
                         {criteriaResults.map(({ key, label, met }) => (
                           <li
                             key={key}
-                            className={`flex items-center gap-1.5 text-xs transition-colors ${met ? 'text-green-600' : 'text-gray-400'}`}
+                            className={`flex items-center gap-1.5 text-xs transition-colors ${met ? 'text-green-400' : 'text-[#464554]'}`}
                           >
                             <span>{met ? '✓' : '○'}</span>
                             {label}
@@ -176,7 +176,7 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-[#d4e4fa] mb-1">
                     Confirmar nueva contraseña
                   </label>
                   <input
@@ -192,12 +192,12 @@ export default function ResetPasswordPage() {
                     aria-describedby={fieldErrors.confirmPassword ? 'confirm-password-error' : undefined}
                   />
                   {fieldErrors.confirmPassword ? (
-                    <p id="confirm-password-error" className="mt-1 text-xs text-red-600">
+                    <p id="confirm-password-error" className="mt-1 text-xs text-red-400">
                       {fieldErrors.confirmPassword}
                     </p>
                   ) : null}
                   {!fieldErrors.confirmPassword && confirmPassword.length > 0 && !passwordsMatch ? (
-                    <p className="mt-1 text-xs text-red-600">Las contraseñas no coinciden.</p>
+                    <p className="mt-1 text-xs text-red-400">Las contraseñas no coinciden.</p>
                   ) : null}
                 </div>
 
@@ -213,9 +213,9 @@ export default function ResetPasswordPage() {
           )}
         </div>
 
-        <p className="text-center text-xs text-white/60 mt-6">
+        <p className="text-center text-xs text-[#908fa0] mt-6">
           ¿Recordaste tu contraseña?{' '}
-          <a href="/" className="text-white/90 underline hover:text-white transition-colors">
+          <a href="/" className="text-primary-400 underline hover:text-primary-300 transition-colors">
             Inicia sesión
           </a>
         </p>

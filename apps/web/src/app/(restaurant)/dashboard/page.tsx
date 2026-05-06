@@ -41,22 +41,22 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-white">
             {restaurant?.name ?? 'Mi Restaurante'}
           </h1>
           <div className="flex items-center gap-2 mt-2">
             <span
-              className={`inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full ${
+              className={`inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full border ${
                 restaurant?.subscription_status === 'active'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-100 text-red-700'
+                  ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                  : 'bg-red-500/10 text-red-400 border-red-500/20'
               }`}
             >
               <span
                 className={`w-2 h-2 rounded-full ${
                   restaurant?.subscription_status === 'active'
-                    ? 'bg-green-500'
-                    : 'bg-red-500'
+                    ? 'bg-green-400'
+                    : 'bg-red-400'
                 }`}
               />
               {restaurant?.subscription_status === 'active'
@@ -79,19 +79,19 @@ export default async function DashboardPage() {
           icon="📅"
           label="Reservas hoy"
           value={String(todayCount)}
-          color="bg-blue-50"
+          accent="text-primary-400"
         />
         <StatCard
           icon="📊"
           label="Total reservas"
           value={String(totalCount)}
-          color="bg-green-50"
+          accent="text-emerald-400"
         />
         <StatCard
           icon="💳"
           label="Suscripción"
           value={restaurant?.subscription_status === 'active' ? 'Activa' : 'Inactiva'}
-          color="bg-orange-50"
+          accent={restaurant?.subscription_status === 'active' ? 'text-emerald-400' : 'text-red-400'}
         />
       </div>
 
@@ -126,13 +126,13 @@ export default async function DashboardPage() {
           <Link
             key={item.href}
             href={item.href}
-            className="card p-5 hover:shadow-md transition-shadow group"
+            className="card p-5 hover:border-primary-500/40 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300 group"
           >
             <div className="text-3xl mb-3">{item.icon}</div>
-            <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+            <h3 className="font-semibold text-white group-hover:text-primary-400 transition-colors">
               {item.title}
             </h3>
-            <p className="text-sm text-gray-500 mt-1">{item.desc}</p>
+            <p className="text-sm text-[#908fa0] mt-1">{item.desc}</p>
           </Link>
         ))}
       </div>
@@ -144,18 +144,18 @@ function StatCard({
   icon,
   label,
   value,
-  color,
+  accent,
 }: {
   icon: string
   label: string
   value: string
-  color: string
+  accent: string
 }) {
   return (
-    <div className={`card p-5 ${color}`}>
+    <div className="card p-5">
       <div className="text-2xl mb-2">{icon}</div>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      <p className="text-sm text-gray-500">{label}</p>
+      <p className={`text-2xl font-bold ${accent}`}>{value}</p>
+      <p className="text-sm text-[#908fa0] mt-1">{label}</p>
     </div>
   )
 }

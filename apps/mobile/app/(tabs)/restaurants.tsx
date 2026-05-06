@@ -82,7 +82,7 @@ export default function RestaurantsScreen() {
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#f97316" />
+          <ActivityIndicator size="large" color="#6366f1" />
         </View>
       ) : (
         <FlatList

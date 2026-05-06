@@ -21,7 +21,7 @@ export async function sendBookingConfirmation({
     subject: `Reserva confirmada en ${restaurantName}`,
     html: `
       <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:20px">
-        <h2 style="color:#f97316">¡Reserva confirmada!</h2>
+        <h2 style="color:#6366f1">¡Reserva confirmada!</h2>
         <p>Tu reserva en <strong>${restaurantName}</strong> ha sido confirmada.</p>
         <table style="width:100%;border-collapse:collapse;margin-top:20px">
           <tr><td style="padding:8px;border:1px solid #eee"><strong>Fecha</strong></td><td style="padding:8px;border:1px solid #eee">${date}</td></tr>
@@ -51,7 +51,7 @@ export async function sendBookingReminder({
     subject: `Recordatorio: reserva mañana en ${restaurantName}`,
     html: `
       <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:20px">
-        <h2 style="color:#f97316">¡Tu reserva es mañana!</h2>
+        <h2 style="color:#6366f1">¡Tu reserva es mañana!</h2>
         <p>Recuerda que tienes reserva en <strong>${restaurantName}</strong>.</p>
         <p><strong>Fecha:</strong> ${date} a las ${time}</p>
       </div>

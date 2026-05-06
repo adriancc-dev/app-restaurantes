@@ -32,7 +32,7 @@ export default function CookieBanner() {
       aria-label="Aviso de cookies"
       className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6"
     >
-      <div className="mx-auto max-w-3xl bg-gray-900 text-white rounded-2xl p-5 shadow-2xl border border-white/10 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+      <div className="mx-auto max-w-3xl bg-[#0d1c2d] text-white rounded-xl p-5 shadow-2xl border border-white/10 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold">Usamos cookies 🍪</p>
           <p className="text-xs text-gray-400 mt-1">

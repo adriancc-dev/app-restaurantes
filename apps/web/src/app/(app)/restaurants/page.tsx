@@ -40,7 +40,7 @@ export default async function RestaurantsPage({ searchParams }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-white tracking-tight">
             {q
               ? `Resultados para "${q}"`
               : location
@@ -55,10 +55,10 @@ export default async function RestaurantsPage({ searchParams }: Props) {
         <div className="flex gap-2 flex-wrap">
           <Link
             href="/restaurants"
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               !selectedSlug && !q
                 ? 'bg-primary-500 text-white'
-                : 'bg-[#0d1c2d] text-gray-300 border border-[#464554] hover:border-primary-500/50'
+                : 'bg-[#0d1c2d] text-[#908fa0] border border-[#464554] hover:border-primary-500/50 hover:text-white'
             }`}
           >
             Todos
@@ -67,10 +67,10 @@ export default async function RestaurantsPage({ searchParams }: Props) {
             <Link
               key={loc.id}
               href={`/restaurants?location=${loc.slug}`}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 selectedSlug === loc.slug
                   ? 'bg-primary-500 text-white'
-                  : 'bg-[#0d1c2d] text-gray-300 border border-[#464554] hover:border-primary-500/50'
+                  : 'bg-[#0d1c2d] text-[#908fa0] border border-[#464554] hover:border-primary-500/50 hover:text-white'
               }`}
             >
               {loc.name}
@@ -86,9 +86,9 @@ export default async function RestaurantsPage({ searchParams }: Props) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 text-gray-500">
+        <div className="text-center py-20 text-[#908fa0]">
           <p className="text-4xl mb-3">🍽️</p>
-          <p className="text-lg font-medium text-gray-300">No hay restaurantes disponibles</p>
+          <p className="text-lg font-medium text-white">No hay restaurantes disponibles</p>
           <p className="text-sm mt-1">Prueba con otra localización</p>
         </div>
       )}

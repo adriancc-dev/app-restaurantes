@@ -86,15 +86,15 @@ export default function HoursPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Horarios de reserva</h1>
+      <h1 className="text-3xl font-bold text-white">Horarios de reserva</h1>
 
       {message && (
-        <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm">
+        <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-sm">
           {message}
         </div>
       )}
 
-      <div className="card divide-y divide-gray-100">
+      <div className="card divide-y divide-white/5">
         {hours.map((h, i) => (
           <div key={h.day_of_week} className="p-4 grid items-center gap-3 sm:grid-cols-[120px_1fr]">
             <div className="flex items-center gap-3">
@@ -103,11 +103,11 @@ export default function HoursPage() {
                 id={`day-${i}`}
                 checked={h.is_open}
                 onChange={(e) => updateDay(i, 'is_open', e.target.checked)}
-                className="w-4 h-4 accent-primary-500"
+                className="w-4 h-4 accent-primary-500 rounded border-[#464554] bg-[#122131]"
               />
               <label
                 htmlFor={`day-${i}`}
-                className={`font-medium text-sm ${h.is_open ? 'text-gray-900' : 'text-gray-400'}`}
+                className={`font-medium text-sm ${h.is_open ? 'text-white' : 'text-[#464554]'}`}
               >
                 {DAY_NAMES[h.day_of_week]}
               </label>
@@ -116,7 +116,7 @@ export default function HoursPage() {
             {h.is_open ? (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Apertura</label>
+                  <label className="text-xs text-[#908fa0] mb-1 block">Apertura</label>
                   <input
                     type="time"
                     className="input text-sm py-2"
@@ -125,7 +125,7 @@ export default function HoursPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Cierre</label>
+                  <label className="text-xs text-[#908fa0] mb-1 block">Cierre</label>
                   <input
                     type="time"
                     className="input text-sm py-2"
@@ -134,7 +134,7 @@ export default function HoursPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Slot (min)</label>
+                  <label className="text-xs text-[#908fa0] mb-1 block">Slot (min)</label>
                   <select
                     className="input text-sm py-2"
                     value={h.slot_duration}
@@ -146,7 +146,7 @@ export default function HoursPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Capacidad</label>
+                  <label className="text-xs text-[#908fa0] mb-1 block">Capacidad</label>
                   <input
                     type="number"
                     className="input text-sm py-2"
@@ -158,7 +158,7 @@ export default function HoursPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-gray-400 italic">Cerrado</p>
+              <p className="text-sm text-[#464554] italic">Cerrado</p>
             )}
           </div>
         ))}

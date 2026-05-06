@@ -32,7 +32,6 @@ export default async function RestaurantDetailPage({ params, searchParams }: Pro
     .eq('day_of_week', dayOfWeek)
     .single()
 
-  // Obtener reservas existentes para ese día
   const { data: existingReservations } = await supabase
     .from('reservations')
     .select('time')
@@ -48,7 +47,6 @@ export default async function RestaurantDetailPage({ params, searchParams }: Pro
 
   const slots = hours ? generateTimeSlots(hours, countsByTime) : []
 
-  // Fechas seleccionables (próximos 30 días)
   const availableDates = Array.from({ length: 30 }, (_, i) =>
     format(addDays(new Date(), i), 'yyyy-MM-dd')
   )
@@ -67,15 +65,15 @@ export default async function RestaurantDetailPage({ params, searchParams }: Pro
             className="w-full h-56 object-cover"
           />
         ) : (
-          <div className="w-full h-56 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-6xl">
+          <div className="w-full h-56 bg-gradient-to-br from-[#122131] to-[#1c2b3c] flex items-center justify-center text-6xl">
             🍽️
           </div>
         )}
         <div className="p-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{restaurant.name}</h1>
-              <p className="text-gray-500 mt-1">
+              <h1 className="text-3xl font-bold text-white">{restaurant.name}</h1>
+              <p className="text-[#908fa0] mt-1">
                 📍 {restaurant.location?.name}
                 {restaurant.address && ` — ${restaurant.address}`}
               </p>
@@ -99,14 +97,14 @@ export default async function RestaurantDetailPage({ params, searchParams }: Pro
             </div>
           </div>
           {restaurant.description && (
-            <p className="mt-4 text-gray-600">{restaurant.description}</p>
+            <p className="mt-4 text-[#c7c4d7]">{restaurant.description}</p>
           )}
         </div>
       </div>
 
       {/* Formulario de reserva */}
       <div className="card p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Hacer una reserva</h2>
+        <h2 className="text-xl font-bold text-white mb-6">Hacer una reserva</h2>
         <BookingForm
           restaurantId={restaurant.id}
           restaurantName={restaurant.name}

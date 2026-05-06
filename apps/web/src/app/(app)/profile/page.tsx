@@ -38,19 +38,19 @@ export default async function ProfilePage() {
       {/* Perfil */}
       <div className="card p-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-3xl">
+          <div className="w-16 h-16 rounded-full bg-primary-500/20 border border-primary-500/30 flex items-center justify-center text-3xl">
             👤
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-white">
               {profile?.full_name ?? user.email}
             </h1>
-            <p className="text-gray-500 text-sm">{user.email}</p>
+            <p className="text-[#908fa0] text-sm">{user.email}</p>
             {profile?.phone && (
-              <p className="text-gray-500 text-sm">📞 {profile.phone}</p>
+              <p className="text-[#908fa0] text-sm">📞 {profile.phone}</p>
             )}
             {profile?.location && (
-              <p className="text-gray-500 text-sm">📍 {profile.location}</p>
+              <p className="text-[#908fa0] text-sm">📍 {profile.location}</p>
             )}
           </div>
         </div>
@@ -58,7 +58,7 @@ export default async function ProfilePage() {
 
       {/* Reservas próximas */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <h2 className="text-xl font-bold text-white mb-4">
           Próximas reservas ({upcoming.length})
         </h2>
         {upcoming.length > 0 ? (
@@ -68,7 +68,7 @@ export default async function ProfilePage() {
             ))}
           </div>
         ) : (
-          <div className="card p-6 text-center text-gray-400">
+          <div className="card p-6 text-center text-[#908fa0]">
             <p>No tienes reservas próximas.</p>
             <Link href="/home" className="btn-primary mt-3 inline-block">
               Hacer una reserva
@@ -80,7 +80,7 @@ export default async function ProfilePage() {
       {/* Historial */}
       {past.length > 0 && (
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Historial</h2>
+          <h2 className="text-xl font-bold text-white mb-4">Historial</h2>
           <div className="space-y-3">
             {past.map((r) => (
               <ReservationCard key={r.id} reservation={r} />
@@ -90,9 +90,9 @@ export default async function ProfilePage() {
       )}
 
       {/* Zona de peligro */}
-      <div className="card p-6 border-red-100">
-        <h2 className="text-base font-semibold text-red-700 mb-1">Zona de peligro</h2>
-        <p className="text-sm text-gray-500 mb-4">
+      <div className="card p-6 border-red-500/20">
+        <h2 className="text-base font-semibold text-red-400 mb-1">Zona de peligro</h2>
+        <p className="text-sm text-[#908fa0] mb-4">
           Eliminar tu cuenta borra permanentemente todos tus datos y reservas. Esta acción no se puede deshacer.
         </p>
         <DeleteAccountButton />
@@ -103,10 +103,10 @@ export default async function ProfilePage() {
 
 function ReservationCard({ reservation }: { reservation: ReservationRow }) {
   const statusColor: Record<ReservationStatus, string> = {
-    confirmed: 'text-green-600 bg-green-50',
-    cancelled: 'text-red-600 bg-red-50',
-    completed: 'text-gray-600 bg-gray-50',
-    no_show: 'text-orange-600 bg-orange-50',
+    confirmed: 'bg-green-500/10 text-green-400 border-green-500/20',
+    cancelled: 'bg-red-500/10 text-red-400 border-red-500/20',
+    completed: 'bg-white/5 text-[#908fa0] border-white/10',
+    no_show: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
   }
   const statusLabel: Record<ReservationStatus, string> = {
     confirmed: 'Confirmada',
@@ -124,15 +124,15 @@ function ReservationCard({ reservation }: { reservation: ReservationRow }) {
           className="w-14 h-14 rounded-xl object-cover"
         />
       ) : (
-        <div className="w-14 h-14 rounded-xl bg-primary-100 flex items-center justify-center text-xl">
+        <div className="w-14 h-14 rounded-xl bg-primary-500/20 flex items-center justify-center text-xl">
           🍽️
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-gray-900 truncate">
+        <p className="font-semibold text-white truncate">
           {reservation.restaurant?.name}
         </p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[#908fa0]">
           {format(new Date(reservation.date + 'T12:00:00'), "d 'de' MMMM yyyy", {
             locale: es,
           })}{' '}
@@ -140,7 +140,7 @@ function ReservationCard({ reservation }: { reservation: ReservationRow }) {
         </p>
       </div>
       <span
-        className={`text-xs font-semibold px-3 py-1 rounded-full ${statusColor[reservation.status]}`}
+        className={`text-xs font-semibold px-3 py-1 rounded-full border ${statusColor[reservation.status]}`}
       >
         {statusLabel[reservation.status]}
       </span>

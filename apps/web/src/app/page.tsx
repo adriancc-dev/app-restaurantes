@@ -175,7 +175,7 @@ export default function LandingPage() {
     passwordScore <= 1 ? 'bg-red-500' :
     passwordScore <= 2 ? 'bg-orange-500' :
     passwordScore <= 3 ? 'bg-yellow-500' :
-    passwordScore <= 4 ? 'bg-lime-500' : 'bg-green-600'
+    passwordScore <= 4 ? 'bg-lime-500' : 'bg-green-500'
 
   function switchMode(next: 'login' | 'register' | 'forgot') {
     setMode(next)
@@ -373,11 +373,11 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-500 via-primary-600 to-orange-700">
+    <div className="min-h-screen bg-[#051424]">
       {/* Banner descarga */}
-      <div className="bg-black/30 backdrop-blur-sm py-3">
+      <div className="bg-black/60 backdrop-blur-sm border-b border-white/5 py-3">
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-center gap-6 flex-wrap">
-          <span className="text-white text-sm font-medium">
+          <span className="text-[#d4e4fa] text-sm font-medium">
             ¡Descarga nuestra app y reserva desde tu móvil!
           </span>
           <div className="flex gap-3">
@@ -385,7 +385,7 @@ export default function LandingPage() {
               href={PLAYSTORE_URL}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 bg-black text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3.18 23.76c.3.17.64.24.99.2l.1-.03L13.58 14l-3.24-3.24-7.16 12.97zM20.1 10.36l-2.53-1.45-3.58 3.1 3.58 3.1 2.56-1.47c.73-.42.73-1.47-.03-1.88v.6zM2.3.32C2.1.54 2 .85 2 1.23v21.55c0 .38.1.69.32.9l.05.04L13.1 12.01v-.28L2.35.27 2.3.32zm11.27 11.25l3.58-3.1-3.58-3.58L10 8.15l3.57 3.42z" />
@@ -396,7 +396,7 @@ export default function LandingPage() {
               href={APPSTORE_URL}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 bg-black text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
@@ -411,29 +411,32 @@ export default function LandingPage() {
         {/* Columna izquierda: branding + QR */}
         <div className="text-white space-y-8">
           <div>
-            <h1 className="text-5xl font-bold leading-tight">
+            <p className="text-xs font-semibold text-primary-400 tracking-widest uppercase mb-4">
+              Plataforma de reservas
+            </p>
+            <h1 className="text-5xl font-bold leading-tight tracking-tight text-white">
               Reserva tu mesa<br />
-              <span className="text-yellow-300">en segundos</span>
+              <span className="text-primary-400">en segundos</span>
             </h1>
-            <p className="mt-4 text-lg text-white/80">
+            <p className="mt-4 text-lg text-[#908fa0]">
               Los mejores restaurantes de Moncofa, Nules y La Vall d&apos;Uixó
               en un solo lugar. Elige, reserva y disfruta.
             </p>
           </div>
 
-          <div className="flex gap-4 flex-wrap">
+          <div className="flex gap-3 flex-wrap">
             {['Moncofa', 'Nules', "La Vall d'Uixó"].map((loc) => (
               <span
                 key={loc}
-                className="bg-white/20 backdrop-blur-sm text-white text-sm font-medium px-4 py-2 rounded-full border border-white/30"
+                className="bg-white/5 text-[#d4e4fa] text-sm font-medium px-4 py-2 rounded-full border border-white/10"
               >
                 📍 {loc}
               </span>
             ))}
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 inline-block border border-white/20">
-            <p className="text-sm text-white/80 mb-3 text-center">
+          <div className="bg-[#0d1c2d] border border-white/10 rounded-2xl p-6 inline-block">
+            <p className="text-sm text-[#908fa0] mb-3 text-center">
               Escanea para acceder desde tu móvil
             </p>
             <div className="bg-white p-3 rounded-xl">
@@ -443,14 +446,14 @@ export default function LandingPage() {
         </div>
 
         {/* Columna derecha: formulario */}
-        <div className="bg-white rounded-3xl p-8 shadow-2xl">
+        <div className="bg-[#0d1c2d] border border-white/10 rounded-2xl p-8 shadow-2xl shadow-black/40">
 
           {/* ── MODO RECUPERAR CONTRASEÑA ── */}
           {mode === 'forgot' ? (
             <>
               <button
                 onClick={() => switchMode('login')}
-                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6"
+                className="flex items-center gap-1.5 text-sm text-[#908fa0] hover:text-white transition-colors mb-6"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -458,18 +461,18 @@ export default function LandingPage() {
                 Volver al inicio de sesión
               </button>
 
-              <h2 className="text-xl font-bold text-gray-900">Recuperar contraseña</h2>
-              <p className="mt-1 text-sm text-gray-500">
+              <h2 className="text-xl font-bold text-white">Recuperar contraseña</h2>
+              <p className="mt-1 text-sm text-[#908fa0]">
                 Introduce tu correo y te enviaremos un enlace para restablecer tu contraseña.
               </p>
 
               {error ? (
-                <div role="alert" className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+                <div role="alert" className="mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">
                   {error}
                 </div>
               ) : null}
               {success ? (
-                <div role="status" className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">
+                <div role="status" className="mt-4 p-3 bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-lg">
                   {success}
                 </div>
               ) : null}
@@ -477,7 +480,7 @@ export default function LandingPage() {
               {!success && (
                 <form onSubmit={handleForgotPassword} className="mt-6 space-y-4">
                   <div>
-                    <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="forgot-email" className="block text-sm font-medium text-[#d4e4fa] mb-1">
                       Correo electrónico
                     </label>
                     <input
@@ -493,7 +496,7 @@ export default function LandingPage() {
                       aria-describedby={fieldErrors.email ? 'forgot-email-error' : undefined}
                     />
                     {fieldErrors.email ? (
-                      <p id="forgot-email-error" className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                      <p id="forgot-email-error" className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
                     ) : null}
                   </div>
                   <button
@@ -518,15 +521,15 @@ export default function LandingPage() {
           ) : (
             <>
               {/* ── TABS LOGIN / REGISTRO ── */}
-              <div className="flex rounded-xl bg-gray-100 p-1 mb-6">
+              <div className="flex rounded-lg bg-[#122131] border border-white/5 p-1 mb-6">
                 {(['login', 'register'] as const).map((m) => (
                   <button
                     key={m}
                     onClick={() => switchMode(m)}
-                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                    className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition-all ${
                       mode === m
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-[#0d1c2d] text-white shadow-sm border border-white/10'
+                        : 'text-[#908fa0] hover:text-[#d4e4fa]'
                     }`}
                   >
                     {m === 'login' ? 'Iniciar sesión' : 'Registrarse'}
@@ -535,12 +538,12 @@ export default function LandingPage() {
               </div>
 
               {error ? (
-                <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+                <div role="alert" className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">
                   {error}
                 </div>
               ) : null}
               {success ? (
-                <div role="status" className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">
+                <div role="status" className="mb-4 p-3 bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-lg">
                   {success}
                 </div>
               ) : null}
@@ -551,7 +554,7 @@ export default function LandingPage() {
                 {mode === 'register' && (
                   <>
                     <div>
-                      <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="fullName" className="block text-sm font-medium text-[#d4e4fa] mb-1">
                         Nombre completo
                       </label>
                       <input
@@ -566,15 +569,15 @@ export default function LandingPage() {
                         aria-invalid={Boolean(fieldErrors.fullName)}
                         aria-describedby={fieldErrors.fullName ? 'fullName-error' : undefined}
                       />
-                      {fieldErrors.fullName ? <p id="fullName-error" className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p> : null}
-                      {!fieldErrors.fullName && fullName.length > 0 && !hasValidFullName ? <p className="mt-1 text-xs text-red-600">Introduce al menos nombre y un apellido.</p> : null}
+                      {fieldErrors.fullName ? <p id="fullName-error" className="mt-1 text-xs text-red-400">{fieldErrors.fullName}</p> : null}
+                      {!fieldErrors.fullName && fullName.length > 0 && !hasValidFullName ? <p className="mt-1 text-xs text-red-400">Introduce al menos nombre y un apellido.</p> : null}
                     </div>
 
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="phone" className="block text-sm font-medium text-[#d4e4fa] mb-1">
                         Teléfono (extensión país + número)
                       </label>
-                      <div className="border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
+                      <div className="border border-[#464554] rounded-lg px-4 py-3 bg-[#122131]">
                         <PhoneInput
                           id="phone"
                           international
@@ -589,12 +592,12 @@ export default function LandingPage() {
                           aria-describedby={fieldErrors.phone ? 'phone-error' : undefined}
                         />
                       </div>
-                      {fieldErrors.phone ? <p id="phone-error" className="mt-1 text-xs text-red-600">{fieldErrors.phone}</p> : null}
-                      {!fieldErrors.phone && phone && !hasValidPhone ? <p className="mt-1 text-xs text-red-600">Número no válido para el país seleccionado.</p> : null}
+                      {fieldErrors.phone ? <p id="phone-error" className="mt-1 text-xs text-red-400">{fieldErrors.phone}</p> : null}
+                      {!fieldErrors.phone && phone && !hasValidPhone ? <p className="mt-1 text-xs text-red-400">Número no válido para el país seleccionado.</p> : null}
                     </div>
 
                     <fieldset>
-                      <legend className="block text-sm font-medium text-gray-700 mb-1">
+                      <legend className="block text-sm font-medium text-[#d4e4fa] mb-1">
                         Tipo de cuenta
                       </legend>
                       <div className="grid grid-cols-2 gap-3">
@@ -603,10 +606,10 @@ export default function LandingPage() {
                             key={r}
                             type="button"
                             onClick={() => setRole(r)}
-                            className={`py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                            className={`py-3 rounded-lg border-2 text-sm font-semibold transition-all ${
                               role === r
-                                ? 'border-primary-500 bg-primary-50 text-primary-700'
-                                : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                ? 'border-primary-500 bg-primary-500/10 text-primary-300'
+                                : 'border-[#464554] text-[#908fa0] hover:border-primary-500/50 hover:text-white'
                             }`}
                           >
                             {r === 'user' ? '👤 Cliente' : '🍽️ Restaurante'}
@@ -619,7 +622,7 @@ export default function LandingPage() {
 
                 {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-[#d4e4fa] mb-1">
                     Correo electrónico
                   </label>
                   <input
@@ -635,13 +638,13 @@ export default function LandingPage() {
                     aria-invalid={Boolean(fieldErrors.email)}
                     aria-describedby={fieldErrors.email ? 'email-error' : undefined}
                   />
-                  {fieldErrors.email ? <p id="email-error" className="mt-1 text-xs text-red-600">{fieldErrors.email}</p> : null}
-                  {!fieldErrors.email && mode === 'register' && email.length > 0 && !isEmailValid ? <p className="mt-1 text-xs text-red-600">Introduce un correo válido (ejemplo: nombre@dominio.com).</p> : null}
+                  {fieldErrors.email ? <p id="email-error" className="mt-1 text-xs text-red-400">{fieldErrors.email}</p> : null}
+                  {!fieldErrors.email && mode === 'register' && email.length > 0 && !isEmailValid ? <p className="mt-1 text-xs text-red-400">Introduce un correo válido (ejemplo: nombre@dominio.com).</p> : null}
                 </div>
 
                 {/* Contraseña */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-[#d4e4fa] mb-1">
                     Contraseña
                   </label>
                   <div className="relative">
@@ -663,29 +666,29 @@ export default function LandingPage() {
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#908fa0] hover:text-[#d4e4fa] transition-colors"
                     >
                       {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                     </button>
                   </div>
-                  {fieldErrors.password ? <p id="password-error" className="mt-1 text-xs text-red-600">{fieldErrors.password}</p> : null}
+                  {fieldErrors.password ? <p id="password-error" className="mt-1 text-xs text-red-400">{fieldErrors.password}</p> : null}
 
                   {mode === 'register' && password.length > 0 && (
                     <div className="mt-3 space-y-2">
-                      <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-[#273647] overflow-hidden">
                         <div
                           className={`h-full transition-all duration-300 ${strengthColor}`}
                           style={{ width: `${(passwordScore / 5) * 100}%` }}
                         />
                       </div>
-                      <p className="text-xs text-gray-600">
-                        Seguridad: <span className="font-semibold">{strengthLabel}</span>
+                      <p className="text-xs text-[#908fa0]">
+                        Seguridad: <span className="font-semibold text-[#d4e4fa]">{strengthLabel}</span>
                       </p>
                       <ul className="space-y-1 pt-0.5">
                         {criteriaResults.map(({ key, label, met }) => (
                           <li
                             key={key}
-                            className={`flex items-center gap-1.5 text-xs transition-colors ${met ? 'text-green-600' : 'text-gray-400'}`}
+                            className={`flex items-center gap-1.5 text-xs transition-colors ${met ? 'text-green-400' : 'text-[#464554]'}`}
                           >
                             <span>{met ? '✓' : '○'}</span>
                             {label}
@@ -699,7 +702,7 @@ export default function LandingPage() {
                 {/* Confirmar contraseña (solo registro) */}
                 {mode === 'register' && (
                   <div>
-                    <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="confirm-password" className="block text-sm font-medium text-[#d4e4fa] mb-1">
                       Confirmar contraseña
                     </label>
                     <div className="relative">
@@ -720,36 +723,36 @@ export default function LandingPage() {
                         type="button"
                         onClick={() => setShowConfirmPassword((v) => !v)}
                         aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#908fa0] hover:text-[#d4e4fa] transition-colors"
                       >
                         {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
                       </button>
                     </div>
-                    {fieldErrors.confirmPassword ? <p id="confirm-password-error" className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p> : null}
-                    {!fieldErrors.confirmPassword && confirmPassword.length > 0 && !passwordsMatch ? <p className="mt-1 text-xs text-red-600">Las contraseñas no coinciden.</p> : null}
+                    {fieldErrors.confirmPassword ? <p id="confirm-password-error" className="mt-1 text-xs text-red-400">{fieldErrors.confirmPassword}</p> : null}
+                    {!fieldErrors.confirmPassword && confirmPassword.length > 0 && !passwordsMatch ? <p className="mt-1 text-xs text-red-400">Las contraseñas no coinciden.</p> : null}
                   </div>
                 )}
 
                 {/* Términos (solo registro) */}
                 {mode === 'register' && (
                   <div>
-                    <label className="flex items-start gap-2 text-sm text-gray-700">
+                    <label className="flex items-start gap-2 text-sm text-[#d4e4fa]">
                       <input
                         type="checkbox"
                         checked={acceptTerms}
                         onChange={(e) => setAcceptTerms(e.target.checked)}
-                        className="mt-1"
+                        className="mt-1 rounded border-[#464554] bg-[#122131] text-primary-500 focus:ring-primary-500 focus:ring-offset-0"
                         aria-invalid={Boolean(fieldErrors.acceptTerms)}
                         aria-describedby={fieldErrors.acceptTerms ? 'terms-error' : undefined}
                       />
                       <span>
                         Acepto los{' '}
-                        <Link href="/terms" className="text-primary-600 underline">Términos</Link>
+                        <Link href="/terms" className="text-primary-400 hover:underline">Términos</Link>
                         {' '}y la{' '}
-                        <Link href="/privacy" className="text-primary-600 underline">Política de Privacidad</Link>.
+                        <Link href="/privacy" className="text-primary-400 hover:underline">Política de Privacidad</Link>.
                       </span>
                     </label>
-                    {fieldErrors.acceptTerms ? <p id="terms-error" className="mt-1 text-xs text-red-600">{fieldErrors.acceptTerms}</p> : null}
+                    {fieldErrors.acceptTerms ? <p id="terms-error" className="mt-1 text-xs text-red-400">{fieldErrors.acceptTerms}</p> : null}
                   </div>
                 )}
 
@@ -762,7 +765,7 @@ export default function LandingPage() {
                     <button
                       type="button"
                       onClick={() => switchMode('forgot')}
-                      className="text-primary-700 hover:text-primary-900 underline"
+                      className="text-primary-400 hover:text-primary-300 underline"
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
@@ -770,7 +773,7 @@ export default function LandingPage() {
                       type="button"
                       onClick={handleResendConfirmation}
                       disabled={resendConfirmationLoading}
-                      className="text-primary-700 hover:text-primary-900 underline disabled:opacity-60"
+                      className="text-primary-400 hover:text-primary-300 underline disabled:opacity-60"
                     >
                       {resendConfirmationLoading ? 'Reenviando...' : 'Reenviar confirmación de correo'}
                     </button>
@@ -779,7 +782,7 @@ export default function LandingPage() {
               </form>
 
               {mode === 'register' && (
-                <p className="mt-4 text-xs text-gray-500 text-center">
+                <p className="mt-4 text-xs text-[#908fa0] text-center">
                   Las cuentas de restaurante requieren suscripción para activarse.
                 </p>
               )}
@@ -787,6 +790,17 @@ export default function LandingPage() {
           )}
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 py-8">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+          <span className="text-white font-bold">ReservApp</span>
+          <div className="flex gap-6 flex-wrap justify-center">
+            <Link href="/privacy" className="text-xs text-[#908fa0] hover:text-white transition-colors">Política de Privacidad</Link>
+            <Link href="/terms" className="text-xs text-[#908fa0] hover:text-white transition-colors">Términos de Servicio</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

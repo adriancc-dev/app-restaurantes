@@ -9,7 +9,7 @@ export default function RestaurantCard({ restaurant }: Props) {
   return (
     <Link
       href={`/restaurants/${restaurant.id}`}
-      className="card group hover:border-primary-500/40 hover:shadow-2xl hover:shadow-primary-500/10 transition-all duration-300 flex flex-col"
+      className="bg-[#0d1c2d] border border-white/10 rounded-xl overflow-hidden group hover:border-primary-500/40 hover:shadow-2xl hover:shadow-primary-500/10 transition-all duration-300 flex flex-col"
     >
       <div className="relative h-44 overflow-hidden">
         {restaurant.image_url ? (
@@ -32,9 +32,9 @@ export default function RestaurantCard({ restaurant }: Props) {
           <p className="text-sm text-[#908fa0] mt-0.5">📍 {restaurant.location.name}</p>
         )}
         {restaurant.description && (
-          <p className="text-sm text-gray-400 mt-2 line-clamp-2">{restaurant.description}</p>
+          <p className="text-sm text-[#908fa0] mt-2 line-clamp-2">{restaurant.description}</p>
         )}
-        <div className="mt-3 pt-3 border-t border-[#464554]/50 flex items-center justify-between">
+        <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
           {restaurant.menu_url && (
             <span className="text-xs text-primary-400 font-medium">📋 Carta disponible</span>
           )}

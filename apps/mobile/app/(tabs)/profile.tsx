@@ -12,11 +12,15 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Reservation } from '@repo/shared'
+import type { Reservation, Restaurant } from '@repo/shared'
+
+type ReservationRow = Pick<Reservation, 'id' | 'date' | 'time' | 'party_size' | 'notes' | 'status'> & {
+  restaurant: Pick<Restaurant, 'name' | 'image_url'> | null
+}
 
 export default function ProfileScreen() {
   const { session, profile } = useAuth()
-  const [reservations, setReservations] = useState<any[]>([])
+  const [reservations, setReservations] = useState<ReservationRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

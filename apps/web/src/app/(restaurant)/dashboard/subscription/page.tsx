@@ -15,19 +15,19 @@ export default async function SubscriptionPage() {
 
   return (
     <div className="max-w-xl space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Suscripción</h1>
+      <h1 className="text-3xl font-bold text-white">Suscripción</h1>
 
       <div className="card p-6 space-y-4">
         <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${isActive ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span className={`font-semibold ${isActive ? 'text-green-700' : 'text-red-700'}`}>
+          <div className={`w-3 h-3 rounded-full ${isActive ? 'bg-green-400' : 'bg-red-400'}`} />
+          <span className={`font-semibold ${isActive ? 'text-green-400' : 'text-red-400'}`}>
             {isActive ? 'Suscripción activa' : 'Suscripción inactiva'}
           </span>
         </div>
 
-        <div className="bg-gray-50 rounded-xl p-4">
-          <p className="text-2xl font-bold text-gray-900">100€ <span className="text-base font-normal text-gray-500">/ mes</span></p>
-          <p className="text-sm text-gray-500 mt-1">
+        <div className="bg-[#122131] border border-white/5 rounded-xl p-4">
+          <p className="text-2xl font-bold text-white">100€ <span className="text-base font-normal text-[#908fa0]">/ mes</span></p>
+          <p className="text-sm text-[#908fa0] mt-1">
             Incluye perfil de restaurante visible, gestión de reservas ilimitadas y notificaciones automáticas.
           </p>
         </div>
@@ -48,7 +48,7 @@ export default async function SubscriptionPage() {
         )}
 
         {!isActive && (
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-xs text-[#908fa0] text-center">
             Tu restaurante solo aparece visible para los usuarios cuando la suscripción está activa.
           </p>
         )}

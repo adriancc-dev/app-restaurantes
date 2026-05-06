@@ -23,7 +23,7 @@ export default async function RestaurantLayout({
   if (profile?.role !== 'restaurant') redirect('/home')
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#051424]">
       <RestaurantNavbar userName={profile.full_name ?? user.email ?? ''} />
       <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
     </div>

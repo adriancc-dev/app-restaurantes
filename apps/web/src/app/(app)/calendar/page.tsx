@@ -117,8 +117,8 @@ export default function CalendarPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Disponibilidad</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-3xl font-bold text-white tracking-tight">Disponibilidad</h1>
+        <p className="text-[#908fa0] mt-1">
           Selecciona un día para ver qué restaurantes tienen mesa disponible
         </p>
       </div>
@@ -130,16 +130,16 @@ export default function CalendarPage() {
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/5 text-[#d4e4fa] rounded-lg transition-colors"
             >
               ←
             </button>
-            <h2 className="text-lg font-semibold capitalize">
+            <h2 className="text-lg font-semibold text-white capitalize">
               {format(currentMonth, 'MMMM yyyy', { locale: es })}
             </h2>
             <button
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/5 text-[#d4e4fa] rounded-lg transition-colors"
             >
               →
             </button>
@@ -148,7 +148,7 @@ export default function CalendarPage() {
           {/* Cabecera días */}
           <div className="grid grid-cols-7 mb-2">
             {DAY_LABELS.map((d) => (
-              <div key={d} className="text-center text-xs font-semibold text-gray-400 py-2">
+              <div key={d} className="text-center text-xs font-semibold text-[#464554] py-2 uppercase tracking-widest">
                 {d}
               </div>
             ))}
@@ -156,7 +156,6 @@ export default function CalendarPage() {
 
           {/* Días */}
           <div className="grid grid-cols-7 gap-1">
-            {/* Espacios vacíos inicio */}
             {Array.from({ length: firstDayOffset }).map((_, i) => (
               <div key={`empty-${i}`} />
             ))}
@@ -174,10 +173,10 @@ export default function CalendarPage() {
                   onClick={() => handleDayClick(day)}
                   disabled={isPast}
                   className={`
-                    relative aspect-square flex items-center justify-center rounded-xl text-sm font-medium transition-all
-                    ${isPast ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-primary-50'}
+                    relative aspect-square flex items-center justify-center rounded-lg text-sm font-medium transition-all
+                    ${isPast ? 'text-[#273647] cursor-not-allowed' : 'cursor-pointer text-[#d4e4fa] hover:bg-white/5'}
                     ${isSelected ? 'bg-primary-500 text-white hover:bg-primary-600' : ''}
-                    ${isToday && !isSelected ? 'ring-2 ring-primary-500 text-primary-600' : ''}
+                    ${isToday && !isSelected ? 'ring-2 ring-primary-500 text-primary-400' : ''}
                   `}
                 >
                   {format(day, 'd')}
@@ -194,9 +193,9 @@ export default function CalendarPage() {
         <div className="space-y-4">
           {selectedDate ? (
             <>
-              <h3 className="font-semibold text-gray-700">
+              <h3 className="font-semibold text-[#d4e4fa]">
                 Restaurantes disponibles el{' '}
-                <span className="text-primary-600">
+                <span className="text-primary-400">
                   {format(selectedDate, "d 'de' MMMM", { locale: es })}
                 </span>
               </h3>
@@ -205,8 +204,8 @@ export default function CalendarPage() {
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="card p-4 animate-pulse">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-                      <div className="h-3 bg-gray-100 rounded w-1/2" />
+                      <div className="h-4 bg-[#273647] rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-[#1c2b3c] rounded w-1/2" />
                     </div>
                   ))}
                 </div>
@@ -216,7 +215,7 @@ export default function CalendarPage() {
                     <Link
                       key={r.id}
                       href={`/restaurants/${r.id}?date=${format(selectedDate, 'yyyy-MM-dd')}`}
-                      className="card p-4 flex items-center gap-4 hover:shadow-md transition-shadow"
+                      className="card p-4 flex items-center gap-4 hover:border-primary-500/30 transition-all duration-200"
                     >
                       {r.image_url ? (
                         <img
@@ -225,14 +224,14 @@ export default function CalendarPage() {
                           className="w-16 h-16 rounded-xl object-cover"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-xl bg-primary-100 flex items-center justify-center text-2xl">
+                        <div className="w-16 h-16 rounded-xl bg-primary-500/20 flex items-center justify-center text-2xl">
                           🍽️
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold text-gray-900">{r.name}</p>
-                        <p className="text-sm text-gray-500">📍 {r.location?.name}</p>
-                        <p className="text-xs text-green-600 font-medium mt-1">
+                        <p className="font-semibold text-white">{r.name}</p>
+                        <p className="text-sm text-[#908fa0]">📍 {r.location?.name}</p>
+                        <p className="text-xs text-green-400 font-medium mt-1">
                           ✓ Disponible
                         </p>
                       </div>
@@ -240,17 +239,17 @@ export default function CalendarPage() {
                   ))}
                 </div>
               ) : (
-                <div className="card p-8 text-center text-gray-400">
+                <div className="card p-8 text-center text-[#908fa0]">
                   <p className="text-3xl mb-2">😔</p>
-                  <p className="font-medium">Sin disponibilidad este día</p>
+                  <p className="font-medium text-white">Sin disponibilidad este día</p>
                   <p className="text-sm mt-1">Prueba con otra fecha</p>
                 </div>
               )}
             </>
           ) : (
-            <div className="card p-8 text-center text-gray-400">
+            <div className="card p-8 text-center text-[#908fa0]">
               <p className="text-3xl mb-2">📅</p>
-              <p className="font-medium">Selecciona una fecha</p>
+              <p className="font-medium text-white">Selecciona una fecha</p>
               <p className="text-sm mt-1">Verás los restaurantes disponibles</p>
             </div>
           )}

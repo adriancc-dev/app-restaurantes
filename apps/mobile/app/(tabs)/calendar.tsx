@@ -75,7 +75,7 @@ export default function CalendarScreen() {
   }
 
   const markedDates = selectedDate
-    ? { [selectedDate]: { selected: true, selectedColor: '#f97316' } }
+    ? { [selectedDate]: { selected: true, selectedColor: '#6366f1' } }
     : {}
 
   return (
@@ -85,10 +85,10 @@ export default function CalendarScreen() {
         minDate={today}
         markedDates={markedDates}
         theme={{
-          todayTextColor: '#f97316',
-          arrowColor: '#f97316',
-          selectedDayBackgroundColor: '#f97316',
-          dotColor: '#f97316',
+          todayTextColor: '#6366f1',
+          arrowColor: '#6366f1',
+          selectedDayBackgroundColor: '#6366f1',
+          dotColor: '#6366f1',
           textDayFontWeight: '500',
         }}
       />
@@ -104,7 +104,7 @@ export default function CalendarScreen() {
             </Text>
 
             {loading ? (
-              <ActivityIndicator color="#f97316" />
+              <ActivityIndicator color="#6366f1" />
             ) : restaurants.length > 0 ? (
               <View className="space-y-3">
                 {restaurants.map((r) => (
